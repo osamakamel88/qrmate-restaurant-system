@@ -465,7 +465,72 @@ router.post('/tables', (req, res) => {
       table_number, section, capacity, token
     ]);
 
+    broadcastEvent({ type: 'TABLES_UPDATED' });
     res.json({ success: true, message: 'Table added successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.put('/tables/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { table_number, section, capacity } = req.body;
+    runQuery(`
+      UPDATE tables SET
+        table_number = COALESCE(?, table_number),
+        section = COALESCE(?, section),
+        capacity = COALESCE(?, capacity)
+      WHERE id = ?
+    `, [table_number, section, capacity, id]);
+
+    broadcastEvent({ type: 'TABLES_UPDATED' });
+    res.json({ success: true, message: 'تم تحديث بيانات الطاولة بنجاح' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.delete('/tables/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    runQuery("DELETE FROM tables WHERE id = ?", [id]);
+    broadcastEvent({ type: 'TABLES_UPDATED' });
+    res.json({ success: true, message: 'تم حذف الطاولة' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/tables/generate', (req, res) => {
+  try {
+    const { count = 30 } = req.body;
+    const sections = [
+      'الصالة الداخلية / Indoor Hall',
+      'التراس والحديقة / Outdoor Garden',
+      'لاونج الشيشة / Shisha Lounge',
+      'صالة العائلات VIP / VIP Lounge'
+    ];
+
+    runQuery("DELETE FROM tables");
+
+    for (let i = 1; i <= count; i++) {
+      let secIdx = 0;
+      if (i > 24) secIdx = 3;
+      else if (i > 16) secIdx = 2;
+      else if (i > 8) secIdx = 1;
+
+      const section = sections[secIdx];
+      const capacity = i % 4 === 0 ? 8 : (i % 2 === 0 ? 4 : 2);
+      const token = `tbl_${i}_${Math.random().toString(36).substring(2, 9)}`;
+
+      runQuery("INSERT INTO tables (table_number, section, capacity, qr_token, status) VALUES (?, ?, ?, ?, 'available')", [
+        i, section, capacity, token
+      ]);
+    }
+
+    broadcastEvent({ type: 'TABLES_UPDATED' });
+    res.json({ success: true, message: `تم توليد وتوزيع ${count} طاولة على أقسام المطعم بنجاح` });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

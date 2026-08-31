@@ -237,7 +237,8 @@ export function CustomerMenu({ onOpenCart }) {
               return (
                 <div
                   key={item.id}
-                  className={`group rounded-2xl bg-slate-900/90 border border-slate-800/90 p-4 transition-all flex flex-col justify-between hover:border-amber-500/40 hover:shadow-xl hover:shadow-black/40 ${
+                  onClick={() => !isOutOfStock && setSelectedItemForCustomize(item)}
+                  className={`group rounded-2xl bg-slate-900/90 border border-slate-800/90 p-4 transition-all flex flex-col justify-between hover:border-amber-500/40 hover:shadow-xl hover:shadow-black/40 cursor-pointer ${
                     isOutOfStock ? 'opacity-50 pointer-events-none' : ''
                   }`}
                 >
@@ -280,17 +281,14 @@ export function CustomerMenu({ onOpenCart }) {
                       </span>
                     ) : (
                       <button
-                        onClick={() => {
-                          if (hasModifiers) {
-                            setSelectedItemForCustomize(item);
-                          } else {
-                            addToCart(item, [], 1, '');
-                          }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedItemForCustomize(item);
                         }}
-                        className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-orange-950/40 transition-transform active:scale-95"
+                        className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-orange-950/40 transition-transform active:scale-95 cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>{hasModifiers ? (lang === 'ar' ? 'تخصيص وإضافة' : 'Customize') : t('addToCart')}</span>
+                        <span>{hasModifiers ? (lang === 'ar' ? 'تخصيص وإضافة' : 'Customize') : (lang === 'ar' ? 'اختيار وإضافة +' : 'Select & Add')}</span>
                       </button>
                     )}
                   </div>

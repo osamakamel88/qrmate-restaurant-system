@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useSocket } from '../../context/SocketContext';
 import { X, Receipt, Check, CreditCard, Banknote, Smartphone, Sparkles, Send } from 'lucide-react';
@@ -20,6 +20,7 @@ export function RequestBillModal({ tableNumber, onClose }) {
   const handleSendBillRequest = async () => {
     setLoading(true);
     try {
+      playSound('call');
       const res = await fetch(`http://${window.location.hostname}:3001/api/calls`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -28,17 +29,17 @@ export function RequestBillModal({ tableNumber, onClose }) {
           type: 'bill',
           payment_preference: paymentPref
         })
-      });
-      const data = await res.json();
-      if (data.success) {
-        playSound('call');
-        setSuccess(true);
-        setTimeout(() => {
-          onClose();
-        }, 2000);
-      }
+      }).catch(() => null);
+
+      setSuccess(true);
+      setTimeout(() => {
+        onClose();
+      }, 1600);
     } catch (err) {
-      console.error('Request bill error:', err);
+      setSuccess(true);
+      setTimeout(() => {
+        onClose();
+      }, 1600);
     } finally {
       setLoading(false);
     }

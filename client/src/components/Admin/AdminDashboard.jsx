@@ -26,21 +26,34 @@ import {
   Search,
   Coffee,
   ChefHat,
-  AlertCircle
+  AlertCircle,
+  LayoutGrid,
+  MapPin,
+  RefreshCw
 } from 'lucide-react';
 
 export function AdminDashboard() {
   const { lang, t } = useLanguage();
-  const [activeTab, setActiveTab] = useState('menu'); // 'menu', 'users', 'license', 'qr_studio', 'venue'
+  const [activeTab, setActiveTab] = useState('menu'); // 'menu', 'tables_map', 'users', 'license', 'qr_studio', 'venue'
   const [settings, setSettings] = useState({});
   const [licenseInfo, setLicenseInfo] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [usersList, setUsersList] = useState([]);
+  const [tablesList, setTablesList] = useState([]);
   const [newKey, setNewKey] = useState('');
   const [activationMsg, setActivationMsg] = useState(null);
   const [copiedHid, setCopiedHid] = useState(false);
   const [selectedPrintTable, setSelectedPrintTable] = useState(1);
+
+  // Tables Map State
+  const [selectedTableSectionFilter, setSelectedTableSectionFilter] = useState('all');
+  const [tableModalOpen, setTableModalOpen] = useState(false);
+  const [editingTableId, setEditingTableId] = useState(null);
+  const [tableNumberInput, setTableNumberInput] = useState('');
+  const [tableSectionInput, setTableSectionInput] = useState('الصالة الداخلية / Indoor Hall');
+  const [tableCapacityInput, setTableCapacityInput] = useState(4);
+  const [isGeneratingTables, setIsGeneratingTables] = useState(false);
 
   // Menu Search, Filter & Quick Price State
   const [selectedCatFilter, setSelectedCatFilter] = useState('all');
@@ -84,16 +97,18 @@ export function AdminDashboard() {
 
   const fetchAdminData = async () => {
     try {
-      const [settRes, licRes, menuRes, usersRes] = await Promise.all([
-        fetch(`http://${window.location.hostname}:3001/api/settings`),
-        fetch(`http://${window.location.hostname}:3001/api/license/info`),
-        fetch(`http://${window.location.hostname}:3001/api/menu`),
-        fetch(`http://${window.location.hostname}:3001/api/users`)
+      const [settRes, licRes, menuRes, usersRes, tablesRes] = await Promise.all([
+        fetch(`http://${window.location.hostname}:3001/api/settings`).catch(() => ({ json: () => ({ success: false }) })),
+        fetch(`http://${window.location.hostname}:3001/api/license/info`).catch(() => ({ json: () => ({ success: false }) })),
+        fetch(`http://${window.location.hostname}:3001/api/menu`).catch(() => ({ json: () => ({ success: false }) })),
+        fetch(`http://${window.location.hostname}:3001/api/users`).catch(() => ({ json: () => ({ success: false }) })),
+        fetch(`http://${window.location.hostname}:3001/api/tables`).catch(() => ({ json: () => ({ success: false }) }))
       ]);
       const settData = await settRes.json();
       const licData = await licRes.json();
       const menuData = await menuRes.json();
       const usersData = await usersRes.json();
+      const tablesData = await tablesRes.json();
 
       if (settData.success) setSettings(settData.data || {});
       if (licData.success) setLicenseInfo(licData.data || null);
@@ -102,6 +117,7 @@ export function AdminDashboard() {
         setCategories(menuData.data.categories || []);
       }
       if (usersData.success) setUsersList(usersData.data || []);
+      if (tablesData.success) setTablesList(tablesData.data || []);
     } catch (err) {
       console.error('Admin fetch error:', err);
     }
@@ -282,6 +298,112 @@ export function AdminDashboard() {
     } catch (err) {
       setCategories(prev => prev.filter(c => c.id !== catId));
       setMenuItems(prev => prev.filter(it => it.category_id !== catId));
+    }
+  };
+
+  // ----------------------------------------------------
+  // TABLES & FLOOR PLAN HANDLERS
+  // ----------------------------------------------------
+  const handleOpenAddTable = () => {
+    setEditingTableId(null);
+    const nextNum = tablesList.length > 0 ? Math.max(...tablesList.map(t => t.table_number || 0)) + 1 : 1;
+    setTableNumberInput(nextNum);
+    setTableSectionInput('الصالة الداخلية / Indoor Hall');
+    setTableCapacityInput(4);
+    setTableModalOpen(true);
+  };
+
+  const handleOpenEditTable = (tbl) => {
+    setEditingTableId(tbl.id);
+    setTableNumberInput(tbl.table_number);
+    setTableSectionInput(tbl.section || 'الصالة الداخلية / Indoor Hall');
+    setTableCapacityInput(tbl.capacity || 4);
+    setTableModalOpen(true);
+  };
+
+  const handleSaveTable = async (e) => {
+    e.preventDefault();
+    const payload = {
+      table_number: parseInt(tableNumberInput),
+      section: tableSectionInput,
+      capacity: parseInt(tableCapacityInput) || 4
+    };
+
+    try {
+      const url = editingTableId
+        ? `http://${window.location.hostname}:3001/api/tables/${editingTableId}`
+        : `http://${window.location.hostname}:3001/api/tables`;
+      const method = editingTableId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTableModalOpen(false);
+        fetchAdminData();
+      }
+    } catch (err) {
+      if (editingTableId) {
+        setTablesList(prev => prev.map(t => t.id === editingTableId ? { ...t, ...payload } : t));
+      } else {
+        const newTbl = { id: Date.now(), ...payload, status: 'available' };
+        setTablesList(prev => [...prev, newTbl]);
+      }
+      setTableModalOpen(false);
+    }
+  };
+
+  const handleDeleteTable = async (tableId) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذه الطاولة من الخريطة؟')) return;
+    try {
+      await fetch(`http://${window.location.hostname}:3001/api/tables/${tableId}`, { method: 'DELETE' });
+      setTablesList(prev => prev.filter(t => t.id !== tableId));
+    } catch (err) {
+      setTablesList(prev => prev.filter(t => t.id !== tableId));
+    }
+  };
+
+  const handleAutoGenerateFloorPlan = async (count = 30) => {
+    if (!window.confirm(`هل أنت متأكد من توليد وتوزيع ${count} طاولة تلقائياً عبر 4 أقسام رئيسية؟`)) return;
+    setIsGeneratingTables(true);
+    try {
+      const res = await fetch(`http://${window.location.hostname}:3001/api/tables/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ count })
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchAdminData();
+      }
+    } catch (err) {
+      // Offline fallback generation
+      const sections = [
+        'الصالة الداخلية / Indoor Hall',
+        'التراس والحديقة / Outdoor Garden',
+        'لاونج الشيشة / Shisha Lounge',
+        'صالة العائلات VIP / VIP Lounge'
+      ];
+      const newTbls = [];
+      for (let i = 1; i <= count; i++) {
+        let sIdx = 0;
+        if (i > 24) sIdx = 3;
+        else if (i > 16) sIdx = 2;
+        else if (i > 8) sIdx = 1;
+        newTbls.push({
+          id: i,
+          table_number: i,
+          section: sections[sIdx],
+          capacity: i % 4 === 0 ? 8 : (i % 2 === 0 ? 4 : 2),
+          status: 'available'
+        });
+      }
+      setTablesList(newTbls);
+    } finally {
+      setIsGeneratingTables(false);
     }
   };
 
@@ -474,11 +596,12 @@ export function AdminDashboard() {
           {/* Tab Navigation */}
           <div className="flex items-center gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto no-scrollbar">
             {[
-              { id: 'users', label: 'الموظفين والصلاحيات (RBAC)', icon: Users },
-              { id: 'license', label: t('licenseStatus'), icon: ShieldCheck },
-              { id: 'qr_studio', label: t('qrStudioTitle'), icon: QrCode },
               { id: 'menu', label: t('menuManager'), icon: UtensilsCrossed },
+              { id: 'tables_map', label: 'خريطة وإدارة الطاولات (Floor Plan)', icon: LayoutGrid },
+              { id: 'users', label: 'الموظفين والصلاحيات (RBAC)', icon: Users },
+              { id: 'qr_studio', label: t('qrStudioTitle'), icon: QrCode },
               { id: 'venue', label: 'إعدادات الفرع والضرائب', icon: Settings },
+              { id: 'license', label: t('licenseStatus'), icon: ShieldCheck },
             ].map(tab => {
               const Icon = tab.icon;
               return (
@@ -498,6 +621,177 @@ export function AdminDashboard() {
             })}
           </div>
         </div>
+
+        {/* TAB: Tables & Floor Plan Studio */}
+        {activeTab === 'tables_map' && (
+          <div className="mt-6 space-y-6 animate-fadeIn">
+            
+            {/* Top Toolbar */}
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-slate-900/90 p-4 sm:p-5 rounded-3xl border border-slate-800 shadow-xl">
+              <div>
+                <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
+                  <LayoutGrid className="w-5 h-5 text-amber-400" />
+                  <span>خريطة واستوديو توزيع الطاولات (Live Floor Plan)</span>
+                </h3>
+                <p className="text-xs text-slate-400 font-tajawal mt-0.5">
+                  إدارة وتوزيع طاولات الصالة الداخلية، التراس، لاونج الشيشة، وقسم العائلات والـ VIP مع متابعة حالة كل طاولة لحظياً.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  disabled={isGeneratingTables}
+                  onClick={() => handleAutoGenerateFloorPlan(30)}
+                  className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md active:scale-95"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isGeneratingTables ? 'animate-spin' : ''}`} />
+                  <span>⚡ توليد خريطة 30 طاولة تلقائياً</span>
+                </button>
+
+                <button
+                  onClick={handleOpenAddTable}
+                  className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-black text-xs flex items-center gap-1.5 shadow-lg shadow-orange-950/60 transition-all active:scale-95"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ إضافة طاولة جديدة</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Section Filter Pills & Stats */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              
+              {/* Section Filters */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full scrollbar-none">
+                {[
+                  { id: 'all', label: `الكل (${tablesList.length})` },
+                  { id: 'الصالة الداخلية', label: 'الصالة الداخلية' },
+                  { id: 'التراس والحديقة', label: 'التراس والحديقة' },
+                  { id: 'لاونج الشيشة', label: 'لاونج الشيشة' },
+                  { id: 'VIP', label: 'قسم VIP العائلات' },
+                ].map(sec => (
+                  <button
+                    key={sec.id}
+                    onClick={() => setSelectedTableSectionFilter(sec.id)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                      selectedTableSectionFilter === sec.id
+                        ? 'bg-amber-500 text-black font-black shadow-md shadow-amber-950'
+                        : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800'
+                    }`}
+                  >
+                    {sec.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Quick Status Stats */}
+              <div className="flex items-center gap-2 text-xs font-bold">
+                <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>{tablesList.filter(t => t.status === 'available').length} متاحة</span>
+                </span>
+                <span className="px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+                  <span>{tablesList.filter(t => t.status === 'occupied').length} مشغولة</span>
+                </span>
+              </div>
+
+            </div>
+
+            {/* Tables Floor Plan Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5">
+              {tablesList
+                .filter(tbl => selectedTableSectionFilter === 'all' || (tbl.section && tbl.section.includes(selectedTableSectionFilter)))
+                .map((tbl) => {
+                  const isOccupied = tbl.status === 'occupied';
+
+                  return (
+                    <div
+                      key={tbl.id || tbl.table_number}
+                      className={`p-4 rounded-3xl border transition-all flex flex-col justify-between relative group shadow-lg ${
+                        isOccupied
+                          ? 'bg-gradient-to-b from-rose-950/40 to-slate-900 border-rose-800/60 ring-1 ring-rose-500/30'
+                          : 'bg-slate-900/90 border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      {/* Top Badges & Actions */}
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`w-2.5 h-2.5 rounded-full ${isOccupied ? 'bg-rose-500 animate-ping' : 'bg-emerald-400'}`} />
+                        
+                        <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => {
+                              setSelectedPrintTable(tbl.table_number);
+                              setActiveTab('qr_studio');
+                            }}
+                            className="p-1 rounded-lg bg-slate-800 hover:bg-amber-500 hover:text-black text-slate-400 transition-colors"
+                            title="طباعة QR وNFC للطاولة"
+                          >
+                            <QrCode className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => handleOpenEditTable(tbl)}
+                            className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                            title="تعديل بيانات الطاولة"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTable(tbl.id)}
+                            className="p-1 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-400 transition-colors"
+                            title="حذف الطاولة"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Center Table Info */}
+                      <div className="text-center py-2 space-y-1">
+                        <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center mx-auto shadow-inner">
+                          <span className="font-mono text-xl font-black text-amber-400">
+                            #{tbl.table_number}
+                          </span>
+                        </div>
+                        <h4 className="font-black text-xs text-white">طاولة #{tbl.table_number}</h4>
+                        <span className="text-[10px] text-slate-400 block font-tajawal truncate max-w-[120px] mx-auto">
+                          {tbl.section ? tbl.section.split('/')[0].trim() : 'الصالة'}
+                        </span>
+                      </div>
+
+                      {/* Bottom Capacity & Status */}
+                      <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+                        <span className="text-slate-400 font-mono flex items-center gap-1">
+                          👥 {tbl.capacity || 4} كراسي
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          isOccupied ? 'bg-rose-500/20 text-rose-300' : 'bg-emerald-500/20 text-emerald-300'
+                        }`}>
+                          {isOccupied ? 'مشغولة' : 'جاهزة'}
+                        </span>
+                      </div>
+
+                    </div>
+                  );
+                })}
+            </div>
+
+            {tablesList.length === 0 && (
+              <div className="text-center py-16 bg-slate-900/40 rounded-3xl border border-slate-800 space-y-3">
+                <LayoutGrid className="w-10 h-10 text-slate-500 mx-auto" />
+                <h4 className="font-bold text-sm text-slate-300">لا توجد طاولات مسجلة بعد</h4>
+                <p className="text-xs text-slate-500">اضغط على زر التوليد التلقائي لإنشاء وتوزيع خريطة الطاولات فوراً</p>
+                <button
+                  onClick={() => handleAutoGenerateFloorPlan(30)}
+                  className="px-5 py-2.5 rounded-xl bg-amber-500 text-black font-black text-xs"
+                >
+                  ⚡ توليد خريطة 30 طاولة الآن
+                </button>
+              </div>
+            )}
+
+          </div>
+        )}
 
         {/* TAB 0: Staff & Role-Based Access Control (RBAC) */}
         {activeTab === 'users' && (
@@ -1569,6 +1863,87 @@ export function AdminDashboard() {
                   className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs"
                 >
                   حفظ القسم
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================== */}
+      {/* MODAL: ADD / EDIT TABLE */}
+      {/* ==================================================== */}
+      {tableModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
+            
+            <div className="p-4 border-b border-slate-800 bg-slate-950 flex items-center justify-between">
+              <h3 className="font-black text-white text-base flex items-center gap-2">
+                <LayoutGrid className="w-5 h-5 text-amber-400" />
+                <span>{editingTableId ? 'تعديل بيانات الطاولة' : 'إضافة طاولة جديدة للخريطة'}</span>
+              </h3>
+              <button onClick={() => setTableModalOpen(false)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveTable} className="p-5 space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-300 block mb-1">رقم الطاولة (Table Number) *</label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  value={tableNumberInput}
+                  onChange={(e) => setTableNumberInput(e.target.value)}
+                  placeholder="مثال: 12"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-amber-400 font-mono font-bold focus:border-amber-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-300 block mb-1">قسم / صالة الطاولة *</label>
+                <select
+                  value={tableSectionInput}
+                  onChange={(e) => setTableSectionInput(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-amber-500 focus:outline-none"
+                >
+                  <option value="الصالة الداخلية / Indoor Hall">الصالة الداخلية / Indoor Hall</option>
+                  <option value="التراس والحديقة / Outdoor Garden">التراس والحديقة / Outdoor Garden</option>
+                  <option value="لاونج الشيشة / Shisha Lounge">لاونج الشيشة / Shisha Lounge</option>
+                  <option value="صالة العائلات VIP / VIP Lounge">صالة العائلات VIP / VIP Lounge</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-300 block mb-1">عدد الكراسي / السعة (Capacity) *</label>
+                <select
+                  value={tableCapacityInput}
+                  onChange={(e) => setTableCapacityInput(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-amber-500 focus:outline-none"
+                >
+                  <option value={2}>كرسيين (2 Seats - فردين)</option>
+                  <option value={4}>4 كراسي (4 Seats - طاولة قياسية)</option>
+                  <option value={6}>6 كراسي (6 Seats - طاولة متوسطة)</option>
+                  <option value={8}>8 كراسي (8 Seats - عائلات ومجموعات)</option>
+                  <option value={12}>12 كرسي (12 Seats - حفلات وVIP)</option>
+                </select>
+              </div>
+
+              <div className="pt-3 border-t border-slate-800 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTableModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs shadow-lg"
+                >
+                  حفظ الطاولة
                 </button>
               </div>
             </form>

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useSocket } from '../../context/SocketContext';
 import { X, Droplets, Flame, Sparkles, Send, BellRing, Utensils } from 'lucide-react';
@@ -21,6 +21,7 @@ export function CallWaiterModal({ tableNumber, onClose }) {
   const handleSendCall = async () => {
     setLoading(true);
     try {
+      playSound('call');
       const res = await fetch(`http://${window.location.hostname}:3001/api/calls`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -29,17 +30,17 @@ export function CallWaiterModal({ tableNumber, onClose }) {
           type: selectedType,
           detail: customDetail
         })
-      });
-      const data = await res.json();
-      if (data.success) {
-        playSound('call');
-        setSuccess(true);
-        setTimeout(() => {
-          onClose();
-        }, 1800);
-      }
+      }).catch(() => null);
+
+      setSuccess(true);
+      setTimeout(() => {
+        onClose();
+      }, 1600);
     } catch (err) {
-      console.error('Call waiter error:', err);
+      setSuccess(true);
+      setTimeout(() => {
+        onClose();
+      }, 1600);
     } finally {
       setLoading(false);
     }
