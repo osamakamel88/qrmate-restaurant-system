@@ -581,8 +581,17 @@ export function AdminDashboard() {
     }
   };
 
-  const localIp = settings.localIp || window.location.hostname || '192.168.1.100';
+  const localIp = settings?.localIp || window.location.hostname || '192.168.1.100';
   const tableUrl = `http://${localIp}:3001/?table=${selectedPrintTable}`;
+
+  const filteredItems = (menuItems || []).filter(item => {
+    const matchesCat = selectedCatFilter === 'all' || item.category_id === parseInt(selectedCatFilter, 10);
+    const matchesSearch = !searchQuery || 
+      (item.name_ar && item.name_ar.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.name_en && item.name_en.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.description_ar && item.description_ar.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesCat && matchesSearch;
+  });
 
   return (
     <div className="min-h-screen bg-slate-950 p-4 sm:p-6 pb-28">
@@ -895,7 +904,7 @@ export function AdminDashboard() {
                         const permObj = AVAILABLE_PERMISSIONS.find(ap => ap.id === pId);
                         return (
                           <span key={idx} className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                            {permObj ? permObj.labelAr.split('(')[0] : pId}
+                            {permObj?.labelAr ? permObj.labelAr.split('(')[0] : String(pId)}
                           </span>
                         );
                       })}

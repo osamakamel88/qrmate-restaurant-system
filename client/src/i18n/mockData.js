@@ -1330,10 +1330,10 @@ export const FALLBACK_TABLES = [
 
 export const FALLBACK_USERS = [
   { id: 1, name: "أسامة كامل (المدير العام)", username: "admin", pin: "1234", role: "admin", phone: "01018815050", permissions: ["all"] },
-  { id: 2, name: "أحمد حسن (كابتن صالة)", username: "capt_ahmed", pin: "2222", role: "captain", phone: "01011122233", permissions: ["view_menu", "take_orders", "call_waiter", "view_kds", "manage_tables"] },
-  { id: 3, name: "شيف إبراهيم (رئيس المطبخ)", username: "chef_ibrahim", pin: "3333", role: "chef", phone: "01044455566", permissions: ["view_kds", "mark_ready", "toggle_stock"] },
-  { id: 4, name: "محمد صلاح (بارستا ومشروبات)", username: "barista_mohamed", pin: "4444", role: "barista", phone: "01077788899", permissions: ["view_kds", "mark_ready", "toggle_stock"] },
-  { id: 5, name: "محمود سامي (كاشير)", username: "cashier_mahmoud", pin: "5555", role: "cashier", phone: "01099900011", permissions: ["pos_checkout", "print_receipt", "view_reports"] }
+  { id: 2, name: "أحمد حسن (كابتن صالة)", username: "capt_ahmed", pin: "2222", role: "captain", phone: "01011122233", permissions: ["captain_alerts", "pos_checkout"] },
+  { id: 3, name: "شيف إبراهيم (رئيس المطبخ)", username: "chef_ibrahim", pin: "3333", role: "chef", phone: "01044455566", permissions: ["kds_kitchen"] },
+  { id: 4, name: "محمد صلاح (بارستا ومشروبات)", username: "barista_mohamed", pin: "4444", role: "barista", phone: "01077788899", permissions: ["kds_barista"] },
+  { id: 5, name: "محمود سامي (كاشير)", username: "cashier_mahmoud", pin: "5555", role: "cashier", phone: "01099900011", permissions: ["pos_checkout", "reports_z", "apply_discounts"] }
 ];
 
 export const FALLBACK_LICENSE = {
