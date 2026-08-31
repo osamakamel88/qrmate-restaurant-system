@@ -1,12 +1,12 @@
-﻿import React from 'react';
+import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { Phone, MessageCircle, Globe, Heart, ShieldCheck, Zap, ExternalLink } from 'lucide-react';
 
 export function Footer() {
   const { lang, t } = useLanguage();
   const phoneNumber = '01018815050';
-  const whatsappUrl = `https://wa.me/201018815050?text=${encodeURIComponent('مرحباً أستاذ أسامة، أود الاستفسار عن باقات نظام QRMate واستاندات الـ NFC لكافيهي/مطعمي.')}`;
-  const linkedinUrl = 'https://www.linkedin.com/in/osama-kamel-dev';
+  const whatsappUrl = `https://wa.me/201018815050?text=${encodeURIComponent('مرحباً، أود الاستفسار عن باقات نظام QRMate واستاندات الـ NFC لكافيهي/مطعمي.')}`;
+  const recodeUrl = whatsappUrl;
   const domainUrl = 'https://instafeed.cloud';
 
   return (
@@ -34,9 +34,9 @@ export function Footer() {
             </p>
             <div className="flex items-center gap-2 pt-1 text-slate-400">
               <Globe className="w-4 h-4 text-emerald-400" />
-              <a href={domainUrl} target="_blank" rel="noreferrer" className="text-slate-300 hover:text-amber-400 transition-colors font-mono text-xs">
-                instafeed.cloud
-              </a>
+              <span className="text-slate-300 font-mono text-xs">
+                QRMate On-Premise System
+              </span>
             </div>
           </div>
 
@@ -72,19 +72,14 @@ export function Footer() {
               {lang === 'ar' ? 'التطوير والتصميم' : 'Development & Design'}
             </h4>
             <div className="space-y-1.5">
-              <p className="text-xs text-slate-300 font-bold">
-                Recode Developments
-              </p>
               <a
-                href={linkedinUrl}
+                href={recodeUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-800 hover:border-blue-500/40 text-xs font-bold transition-all mt-1"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 hover:text-amber-300 border border-slate-800 hover:border-amber-500/40 text-xs font-bold transition-all mt-1"
               >
-                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                  <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
-                </svg>
-                <span>Osama Kamel (LinkedIn)</span>
+                <span>Recode Developments</span>
+                <ExternalLink className="w-3 h-3 text-slate-400" />
               </a>
             </div>
           </div>
@@ -94,7 +89,7 @@ export function Footer() {
         {/* Bottom Row: Copyright & Developer Signature */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500 text-center sm:text-right">
           <div>
-            © {new Date().getFullYear()} QRMate Egypt. All Rights Reserved. Hosted on <a href={domainUrl} className="text-amber-400 hover:underline">instafeed.cloud</a>
+            © {new Date().getFullYear()} QRMate Egypt. All Rights Reserved.
           </div>
 
           <div className="flex items-center gap-1 text-slate-400">
@@ -102,12 +97,12 @@ export function Footer() {
             <Heart className="w-3 h-3 text-rose-500 inline fill-rose-500" />
             <span>by</span>
             <a
-              href={linkedinUrl}
+              href={recodeUrl}
               target="_blank"
               rel="noreferrer"
               className="text-amber-400 hover:text-amber-300 font-bold transition-colors underline decoration-amber-500/40 underline-offset-2 ml-1"
             >
-              Recode Developments (Osama Kamel)
+              Recode Developments
             </a>
           </div>
         </div>
