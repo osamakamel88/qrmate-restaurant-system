@@ -3,9 +3,14 @@ node_modules/
 client/node_modules/
 server/node_modules/
 
-# Production build outputs (optional: keep dist ignored as Vercel builds from source)
-dist/
-# client/dist/  # We can let Vercel build it, or include it
+# Temporary extraction files
+pdf_pages/
+soul_menu.pdf
+extracted_soul_menu.txt
+found_menu_step_*.txt
+step92_content.txt
+seed_runner.js
+soul_full_menu_raw.txt
 
 # Environment and keys
 .env
@@ -16,12 +21,7 @@ dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
 
 # OS Files
 .DS_Store
 Thumbs.db
-
-# Editor directories
-.vscode/
-.idea/
