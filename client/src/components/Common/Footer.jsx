@@ -6,7 +6,7 @@ export function Footer() {
   const { lang, t } = useLanguage();
   const phoneNumber = '01018815050';
   const whatsappUrl = `https://wa.me/201018815050?text=${encodeURIComponent('مرحباً، أود الاستفسار عن باقات نظام QRMate واستاندات الـ NFC لكافيهي/مطعمي.')}`;
-  const recodeUrl = whatsappUrl;
+  const recodeUrl = 'https://www.linkedin.com/in/osama-kamel-dev';
   const domainUrl = 'https://instafeed.cloud';
 
   return (
