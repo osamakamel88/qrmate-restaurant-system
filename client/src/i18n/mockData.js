@@ -1294,3 +1294,53 @@ export const FALLBACK_SETTINGS = {
   "wifi_pass": "soul2026",
   "tax_reg_number": "592-108-443"
 };
+
+export const FALLBACK_TABLES = [
+  { id: 1, table_number: 1, section: "الصالة الداخلية / Indoor Hall", capacity: 4, status: "available" },
+  { id: 2, table_number: 2, section: "الصالة الداخلية / Indoor Hall", capacity: 2, status: "available" },
+  { id: 3, table_number: 3, section: "الصالة الداخلية / Indoor Hall", capacity: 4, status: "occupied", activeOrder: { id: 101, order_number: "ORD-8421", grand_total: 620.0, status: "preparing", items_count: 3 } },
+  { id: 4, table_number: 4, section: "الصالة الداخلية / Indoor Hall", capacity: 6, status: "available" },
+  { id: 5, table_number: 5, section: "الصالة الداخلية / Indoor Hall", capacity: 4, status: "available" },
+  { id: 6, table_number: 6, section: "الصالة الداخلية / Indoor Hall", capacity: 8, status: "available" },
+  { id: 7, table_number: 7, section: "الصالة الداخلية / Indoor Hall", capacity: 4, status: "occupied", activeOrder: { id: 102, order_number: "ORD-9304", grand_total: 485.0, status: "ready", items_count: 2 } },
+  { id: 8, table_number: 8, section: "الصالة الداخلية / Indoor Hall", capacity: 2, status: "available" },
+  { id: 9, table_number: 9, section: "التراس والحديقة / Outdoor Garden", capacity: 4, status: "available" },
+  { id: 10, table_number: 10, section: "التراس والحديقة / Outdoor Garden", capacity: 4, status: "available" },
+  { id: 11, table_number: 11, section: "التراس والحديقة / Outdoor Garden", capacity: 6, status: "available" },
+  { id: 12, table_number: 12, section: "التراس والحديقة / Outdoor Garden", capacity: 2, status: "available" },
+  { id: 13, table_number: 13, section: "التراس والحديقة / Outdoor Garden", capacity: 4, status: "available" },
+  { id: 14, table_number: 14, section: "التراس والحديقة / Outdoor Garden", capacity: 8, status: "available" },
+  { id: 15, table_number: 15, section: "التراس والحديقة / Outdoor Garden", capacity: 4, status: "available" },
+  { id: 16, table_number: 16, section: "التراس والحديقة / Outdoor Garden", capacity: 2, status: "available" },
+  { id: 17, table_number: 17, section: "لاونج الشيشة / Shisha Lounge", capacity: 4, status: "available" },
+  { id: 18, table_number: 18, section: "لاونج الشيشة / Shisha Lounge", capacity: 6, status: "available" },
+  { id: 19, table_number: 19, section: "لاونج الشيشة / Shisha Lounge", capacity: 4, status: "available" },
+  { id: 20, table_number: 20, section: "لاونج الشيشة / Shisha Lounge", capacity: 8, status: "available" },
+  { id: 21, table_number: 21, section: "لاونج الشيشة / Shisha Lounge", capacity: 4, status: "available" },
+  { id: 22, table_number: 22, section: "لاونج الشيشة / Shisha Lounge", capacity: 2, status: "available" },
+  { id: 23, table_number: 23, section: "لاونج الشيشة / Shisha Lounge", capacity: 6, status: "available" },
+  { id: 24, table_number: 24, section: "لاونج الشيشة / Shisha Lounge", capacity: 4, status: "available" },
+  { id: 25, table_number: 25, section: "صالة العائلات VIP / VIP Lounge", capacity: 8, status: "available" },
+  { id: 26, table_number: 26, section: "صالة العائلات VIP / VIP Lounge", capacity: 12, status: "available" },
+  { id: 27, table_number: 27, section: "صالة العائلات VIP / VIP Lounge", capacity: 6, status: "available" },
+  { id: 28, table_number: 28, section: "صالة العائلات VIP / VIP Lounge", capacity: 8, status: "available" },
+  { id: 29, table_number: 29, section: "صالة العائلات VIP / VIP Lounge", capacity: 10, status: "available" },
+  { id: 30, table_number: 30, section: "صالة العائلات VIP / VIP Lounge", capacity: 12, status: "available" }
+];
+
+export const FALLBACK_USERS = [
+  { id: 1, name: "أسامة كامل (المدير العام)", username: "admin", pin: "1234", role: "admin", phone: "01018815050", permissions: ["all"] },
+  { id: 2, name: "أحمد حسن (كابتن صالة)", username: "capt_ahmed", pin: "2222", role: "captain", phone: "01011122233", permissions: ["view_menu", "take_orders", "call_waiter", "view_kds", "manage_tables"] },
+  { id: 3, name: "شيف إبراهيم (رئيس المطبخ)", username: "chef_ibrahim", pin: "3333", role: "chef", phone: "01044455566", permissions: ["view_kds", "mark_ready", "toggle_stock"] },
+  { id: 4, name: "محمد صلاح (بارستا ومشروبات)", username: "barista_mohamed", pin: "4444", role: "barista", phone: "01077788899", permissions: ["view_kds", "mark_ready", "toggle_stock"] },
+  { id: 5, name: "محمود سامي (كاشير)", username: "cashier_mahmoud", pin: "5555", role: "cashier", phone: "01099900011", permissions: ["pos_checkout", "print_receipt", "view_reports"] }
+];
+
+export const FALLBACK_LICENSE = {
+  isValid: true,
+  status: "ACTIVE",
+  client_name: "سول كافيه ومطعم (Soul Lounge)",
+  hardware_id: "EGY-NODE-SRV-9082-MAC",
+  days_remaining: 365,
+  expires_at: "2027-08-31"
+};
