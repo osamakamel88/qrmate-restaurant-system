@@ -353,6 +353,85 @@ router.patch('/menu/items/:id/toggle-stock', (req, res) => {
   }
 });
 
+router.patch('/menu/items/:id/price', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { price } = req.body;
+    if (price === undefined || isNaN(parseFloat(price))) {
+      return res.status(400).json({ success: false, message: 'السعر غير صالح' });
+    }
+    runQuery("UPDATE items SET price = ? WHERE id = ?", [parseFloat(price), id]);
+    broadcastMenuUpdate();
+    res.json({ success: true, message: 'تم تحديث السعر بنجاح', price: parseFloat(price) });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.delete('/menu/items/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    runQuery("DELETE FROM items WHERE id = ?", [id]);
+    broadcastMenuUpdate();
+    res.json({ success: true, message: 'تم حذف الصنف بنجاح' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Categories Management
+router.post('/menu/categories', (req, res) => {
+  try {
+    const { name_ar, name_en, icon = 'Utensils', station_type = 'kitchen', sort_order = 0 } = req.body;
+    if (!name_ar || !name_en) {
+      return res.status(400).json({ success: false, message: 'اسم القسم بالعربية والإنجليزية مطلوب' });
+    }
+    const result = runQuery(`
+      INSERT INTO categories (name_ar, name_en, icon, station_type, sort_order, is_active)
+      VALUES (?, ?, ?, ?, ?, 1)
+    `, [name_ar, name_en, icon, station_type, parseInt(sort_order) || 0]);
+
+    broadcastMenuUpdate();
+    res.json({ success: true, message: 'تم إضافة القسم بنجاح', id: result.lastInsertRowid });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.put('/menu/categories/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name_ar, name_en, icon, station_type, sort_order } = req.body;
+    runQuery(`
+      UPDATE categories SET
+        name_ar = COALESCE(?, name_ar),
+        name_en = COALESCE(?, name_en),
+        icon = COALESCE(?, icon),
+        station_type = COALESCE(?, station_type),
+        sort_order = COALESCE(?, sort_order)
+      WHERE id = ?
+    `, [name_ar, name_en, icon, station_type, sort_order, id]);
+
+    broadcastMenuUpdate();
+    res.json({ success: true, message: 'تم تحديث القسم بنجاح' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.delete('/menu/categories/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    // Also delete items in this category
+    runQuery("DELETE FROM items WHERE category_id = ?", [id]);
+    runQuery("DELETE FROM categories WHERE id = ?", [id]);
+    broadcastMenuUpdate();
+    res.json({ success: true, message: 'تم حذف القسم والأصناف التابعة له' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // ----------------------------------------------------
 // 3. TABLES & QR CODE INFO
 // ----------------------------------------------------

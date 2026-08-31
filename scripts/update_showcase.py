@@ -1,4 +1,6 @@
-import React from 'react';
+﻿import os
+
+code = """import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { 
   Sparkles, 
@@ -405,3 +407,9 @@ export function ShowcaseLanding({ onOpenDemo }) {
     </div>
   );
 }
+"""
+
+with open("client/src/components/Showcase/ShowcaseLanding.jsx", "w", encoding="utf-8") as f:
+    f.write(code)
+
+print("ShowcaseLanding.jsx updated successfully!")

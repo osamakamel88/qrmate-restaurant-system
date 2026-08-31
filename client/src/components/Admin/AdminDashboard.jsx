@@ -21,12 +21,17 @@ import {
   Lock,
   CheckSquare,
   Square,
-  X
+  X,
+  Plus,
+  Search,
+  Coffee,
+  ChefHat,
+  AlertCircle
 } from 'lucide-react';
 
 export function AdminDashboard() {
   const { lang, t } = useLanguage();
-  const [activeTab, setActiveTab] = useState('users'); // 'users', 'license', 'qr_studio', 'menu', 'venue'
+  const [activeTab, setActiveTab] = useState('menu'); // 'menu', 'users', 'license', 'qr_studio', 'venue'
   const [settings, setSettings] = useState({});
   const [licenseInfo, setLicenseInfo] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
@@ -36,6 +41,31 @@ export function AdminDashboard() {
   const [activationMsg, setActivationMsg] = useState(null);
   const [copiedHid, setCopiedHid] = useState(false);
   const [selectedPrintTable, setSelectedPrintTable] = useState(1);
+
+  // Menu Search, Filter & Quick Price State
+  const [selectedCatFilter, setSelectedCatFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [quickPrices, setQuickPrices] = useState({});
+
+  // Item Create / Edit Modal State
+  const [itemModalOpen, setItemModalOpen] = useState(false);
+  const [editingItemId, setEditingItemId] = useState(null);
+  const [itemNameAr, setItemNameAr] = useState('');
+  const [itemNameEn, setItemNameEn] = useState('');
+  const [itemDescAr, setItemDescAr] = useState('');
+  const [itemDescEn, setItemDescEn] = useState('');
+  const [itemPrice, setItemPrice] = useState('');
+  const [itemCatId, setItemCatId] = useState(1);
+  const [itemStation, setItemStation] = useState('kitchen');
+  const [itemTags, setItemTags] = useState([]);
+  const [itemAvailable, setItemAvailable] = useState(true);
+
+  // Category Create / Edit Modal State
+  const [catModalOpen, setCatModalOpen] = useState(false);
+  const [editingCatId, setEditingCatId] = useState(null);
+  const [catNameAr, setCatNameAr] = useState('');
+  const [catNameEn, setCatNameEn] = useState('');
+  const [catStation, setCatStation] = useState('kitchen');
 
   // User management modal state
   const [userModalOpen, setUserModalOpen] = useState(false);
@@ -80,6 +110,180 @@ export function AdminDashboard() {
   useEffect(() => {
     fetchAdminData();
   }, []);
+
+  // ----------------------------------------------------
+  // MENU ITEMS HANDLERS
+  // ----------------------------------------------------
+  const handleOpenAddItem = () => {
+    setEditingItemId(null);
+    setItemNameAr('');
+    setItemNameEn('');
+    setItemDescAr('');
+    setItemDescEn('');
+    setItemPrice('');
+    setItemCatId(categories[0]?.id || 1);
+    setItemStation('kitchen');
+    setItemTags([]);
+    setItemAvailable(true);
+    setItemModalOpen(true);
+  };
+
+  const handleOpenEditItem = (item) => {
+    setEditingItemId(item.id);
+    setItemNameAr(item.name_ar || '');
+    setItemNameEn(item.name_en || '');
+    setItemDescAr(item.description_ar || '');
+    setItemDescEn(item.description_en || '');
+    setItemPrice(item.price || '');
+    setItemCatId(item.category_id || categories[0]?.id || 1);
+    setItemStation(item.station_type || 'kitchen');
+    setItemTags(item.tags || []);
+    setItemAvailable(item.is_available !== false);
+    setItemModalOpen(true);
+  };
+
+  const handleToggleItemTag = (tag) => {
+    setItemTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  };
+
+  const handleSaveItem = async (e) => {
+    e.preventDefault();
+    const payload = {
+      name_ar: itemNameAr,
+      name_en: itemNameEn,
+      description_ar: itemDescAr,
+      description_en: itemDescEn,
+      price: parseFloat(itemPrice),
+      category_id: parseInt(itemCatId),
+      station_type: itemStation,
+      tags: itemTags,
+      is_available: itemAvailable
+    };
+
+    try {
+      const url = editingItemId
+        ? `http://${window.location.hostname}:3001/api/menu/items/${editingItemId}`
+        : `http://${window.location.hostname}:3001/api/menu/items`;
+      const method = editingItemId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setItemModalOpen(false);
+        fetchAdminData();
+      } else {
+        alert(data.message || 'حدث خطأ في حفظ الصنف');
+      }
+    } catch (err) {
+      if (editingItemId) {
+        setMenuItems(prev => prev.map(it => it.id === editingItemId ? { ...it, ...payload } : it));
+      } else {
+        const newItem = { id: Date.now(), ...payload };
+        setMenuItems(prev => [newItem, ...prev]);
+      }
+      setItemModalOpen(false);
+    }
+  };
+
+  const handleDeleteItem = async (itemId) => {
+    if (!window.confirm('هل أنت متأكد من رغبتك في حذف هذا الصنف نهائياً من المنيو؟')) return;
+    try {
+      const res = await fetch(`http://${window.location.hostname}:3001/api/menu/items/${itemId}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        setMenuItems(prev => prev.filter(it => it.id !== itemId));
+      }
+    } catch (err) {
+      setMenuItems(prev => prev.filter(it => it.id !== itemId));
+    }
+  };
+
+  const handleQuickPriceChange = async (itemId, newPrice) => {
+    if (!newPrice || isNaN(parseFloat(newPrice))) return;
+    try {
+      await fetch(`http://${window.location.hostname}:3001/api/menu/items/${itemId}/price`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ price: parseFloat(newPrice) })
+      });
+      setMenuItems(prev => prev.map(it => it.id === itemId ? { ...it, price: parseFloat(newPrice) } : it));
+      setQuickPrices(prev => ({ ...prev, [itemId]: undefined }));
+    } catch (err) {
+      setMenuItems(prev => prev.map(it => it.id === itemId ? { ...it, price: parseFloat(newPrice) } : it));
+    }
+  };
+
+  // ----------------------------------------------------
+  // CATEGORIES HANDLERS
+  // ----------------------------------------------------
+  const handleOpenAddCategory = () => {
+    setEditingCatId(null);
+    setCatNameAr('');
+    setCatNameEn('');
+    setCatStation('kitchen');
+    setCatModalOpen(true);
+  };
+
+  const handleOpenEditCategory = (cat) => {
+    setEditingCatId(cat.id);
+    setCatNameAr(cat.name_ar || '');
+    setCatNameEn(cat.name_en || '');
+    setCatStation(cat.station_type || 'kitchen');
+    setCatModalOpen(true);
+  };
+
+  const handleSaveCategory = async (e) => {
+    e.preventDefault();
+    const payload = {
+      name_ar: catNameAr,
+      name_en: catNameEn,
+      station_type: catStation,
+      icon: 'Utensils',
+      sort_order: categories.length + 1
+    };
+
+    try {
+      const url = editingCatId
+        ? `http://${window.location.hostname}:3001/api/menu/categories/${editingCatId}`
+        : `http://${window.location.hostname}:3001/api/menu/categories`;
+      const method = editingCatId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCatModalOpen(false);
+        fetchAdminData();
+      }
+    } catch (err) {
+      if (editingCatId) {
+        setCategories(prev => prev.map(c => c.id === editingCatId ? { ...c, ...payload } : c));
+      } else {
+        const newCat = { id: Date.now(), ...payload };
+        setCategories(prev => [...prev, newCat]);
+      }
+      setCatModalOpen(false);
+    }
+  };
+
+  const handleDeleteCategory = async (catId) => {
+    if (!window.confirm('تحذير: سيتم حذف هذا القسم وكافة الأصناف التابعة له من المنيو! هل أنت متأكد؟')) return;
+    try {
+      await fetch(`http://${window.location.hostname}:3001/api/menu/categories/${catId}`, { method: 'DELETE' });
+      setCategories(prev => prev.filter(c => c.id !== catId));
+      setMenuItems(prev => prev.filter(it => it.category_id !== catId));
+    } catch (err) {
+      setCategories(prev => prev.filter(c => c.id !== catId));
+      setMenuItems(prev => prev.filter(it => it.category_id !== catId));
+    }
+  };
 
   const handleRolePresetChange = (roleKey) => {
     setUserRole(roleKey);
@@ -633,40 +837,251 @@ export function AdminDashboard() {
 
         {/* TAB 3: Menu & Price Editor */}
         {activeTab === 'menu' && (
-          <div className="mt-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-black text-white">
-                {t('menuManager')} ({menuItems.length} صنف)
-              </h3>
+          <div className="mt-6 space-y-6 animate-fadeIn">
+            
+            {/* Top Toolbar: Action Buttons & Search */}
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-slate-900/90 p-4 rounded-3xl border border-slate-800">
+              
+              {/* Search Bar */}
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="ابحث عن صنف أو طبق أو مكونات..."
+                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl py-2.5 pr-10 pl-4 text-xs text-white focus:border-amber-500 focus:outline-none"
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery('')} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2.5">
+                <button
+                  onClick={handleOpenAddCategory}
+                  className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs flex items-center gap-1.5 transition-all"
+                >
+                  <Plus className="w-4 h-4 text-amber-400" />
+                  <span>+ إضافة قسم جديد</span>
+                </button>
+
+                <button
+                  onClick={handleOpenAddItem}
+                  className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-black text-xs flex items-center gap-2 shadow-lg shadow-amber-950/60 transition-all"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ إضافة صنف / طبق جديد</span>
+                </button>
+              </div>
+
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {menuItems.map((item) => (
-                <div key={item.id} className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <h4 className="font-bold text-white text-xs sm:text-sm truncate">
-                      {lang === 'ar' ? item.name_ar : item.name_en}
-                    </h4>
-                    <span className="font-mono text-amber-400 text-xs font-bold block mt-0.5">
-                      {item.price} {t('currency')}
-                    </span>
-                  </div>
+            {/* Category Filter Pills */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-400">الأقسام المتاحة:</span>
+                <span className="text-[11px] font-mono text-slate-500">
+                  {filteredItems.length} من أصل {menuItems.length} صنف
+                </span>
+              </div>
 
-                  <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+                <button
+                  onClick={() => setSelectedCatFilter('all')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                    selectedCatFilter === 'all'
+                      ? 'bg-amber-500 text-black font-black'
+                      : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800'
+                  }`}
+                >
+                  الكل ({menuItems.length})
+                </button>
+
+                {categories.map(cat => (
+                  <div key={cat.id} className="relative group flex-shrink-0">
                     <button
-                      onClick={() => handleToggleStock(item.id)}
-                      className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all ${
-                        item.is_available
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                      onClick={() => setSelectedCatFilter(cat.id.toString())}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                        selectedCatFilter === cat.id.toString()
+                          ? 'bg-amber-500 text-black font-black'
+                          : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'
                       }`}
                     >
-                      {item.is_available ? t('inStock') : t('outOfStock')}
+                      <span>{lang === 'ar' ? cat.name_ar : cat.name_en}</span>
+                      <span className="text-[10px] opacity-75 font-mono">
+                        ({menuItems.filter(it => it.category_id === cat.id).length})
+                      </span>
                     </button>
+
+                    {/* Quick Edit/Delete Category */}
+                    <div className="hidden group-hover:flex items-center gap-1 absolute -top-3 left-1 bg-slate-950 border border-slate-700 rounded-lg p-0.5 shadow-lg z-10">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleOpenEditCategory(cat); }}
+                        className="p-1 text-slate-400 hover:text-amber-400"
+                        title="تعديل اسم القسم"
+                      >
+                        <Edit3 className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeleteCategory(cat.id); }}
+                        className="p-1 text-slate-400 hover:text-rose-400"
+                        title="حذف القسم"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
+
+            {/* Menu Items Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredItems.map((item) => {
+                const catObj = categories.find(c => c.id === item.category_id);
+                const currentQuickPrice = quickPrices[item.id] !== undefined ? quickPrices[item.id] : item.price;
+                const isPriceDirty = quickPrices[item.id] !== undefined && quickPrices[item.id] !== item.price;
+
+                return (
+                  <div
+                    key={item.id}
+                    className={`rounded-3xl bg-slate-900/90 border p-5 flex flex-col justify-between transition-all ${
+                      item.is_available ? 'border-slate-800 hover:border-slate-700' : 'border-rose-900/30 opacity-75 bg-slate-950/60'
+                    }`}
+                  >
+                    <div>
+                      {/* Card Top: Badges & Actions */}
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                            {catObj ? (lang === 'ar' ? catObj.name_ar : catObj.name_en) : 'عام'}
+                          </span>
+
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                            item.station_type === 'kitchen'
+                              ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                              : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                          }`}>
+                            {item.station_type === 'kitchen' ? <ChefHat className="w-3 h-3" /> : <Coffee className="w-3 h-3" />}
+                            <span>{item.station_type === 'kitchen' ? 'المطبخ' : 'البار / الشيشة'}</span>
+                          </span>
+
+                          {item.tags?.includes('popular') && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                              ⭐ الأكثر طلباً
+                            </span>
+                          )}
+                          {item.tags?.includes('spicy') && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
+                              🔥 حار
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Edit / Delete Buttons */}
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleOpenEditItem(item)}
+                            className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 transition-colors"
+                            title="تعديل بيانات الصنف"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="p-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 transition-colors"
+                            title="حذف الصنف"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Title & Descriptions */}
+                      <h4 className="text-sm font-black text-white leading-snug mb-1">
+                        {item.name_ar}
+                      </h4>
+                      {item.name_en && (
+                        <p className="text-xs text-slate-400 font-mono mb-2">
+                          {item.name_en}
+                        </p>
+                      )}
+                      {item.description_ar && (
+                        <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed mb-4">
+                          {item.description_ar}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Card Bottom: Quick Price Editor & Availability Toggle */}
+                    <div className="pt-4 border-t border-slate-800/80 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        
+                        {/* Quick Price Input */}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-slate-400">السعر:</span>
+                          <div className="relative flex items-center">
+                            <input
+                              type="number"
+                              step="0.5"
+                              value={currentQuickPrice}
+                              onChange={(e) => setQuickPrices({ ...quickPrices, [item.id]: e.target.value })}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleQuickPriceChange(item.id, currentQuickPrice);
+                              }}
+                              className="w-20 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl py-1 px-2 text-xs font-mono font-bold text-amber-400 focus:outline-none"
+                            />
+                            <span className="text-[11px] text-slate-400 font-bold mr-1.5">ج.م</span>
+
+                            {isPriceDirty && (
+                              <button
+                                onClick={() => handleQuickPriceChange(item.id, currentQuickPrice)}
+                                className="mr-1 p-1 rounded-lg bg-emerald-500 text-black hover:bg-emerald-400 transition-colors"
+                                title="حفظ السعر الجديد"
+                              >
+                                <Check className="w-3 h-3 stroke-[3]" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Stock Toggle Button */}
+                        <button
+                          onClick={() => handleToggleStock(item.id)}
+                          className={`px-3 py-1 rounded-xl text-[11px] font-bold transition-all ${
+                            item.is_available
+                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                              : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                          }`}
+                        >
+                          {item.is_available ? 'متاح للطلب ✅' : 'نفذ من المخزن ❌'}
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+                );
+              })}
+            </div>
+
+            {filteredItems.length === 0 && (
+              <div className="text-center py-16 bg-slate-900/40 rounded-3xl border border-slate-800 space-y-3">
+                <AlertCircle className="w-10 h-10 text-slate-500 mx-auto" />
+                <h4 className="font-bold text-sm text-slate-300">لا توجد أصناف مطابقة للبحث أو الفلتر</h4>
+                <p className="text-xs text-slate-500">يمكنك الضغط على "+ إضافة صنف جديد" لإضافة أول طبق في هذا القسم</p>
+                <button
+                  onClick={handleOpenAddItem}
+                  className="px-4 py-2 rounded-xl bg-amber-500 text-black font-bold text-xs"
+                >
+                  + إضافة صنف الآن
+                </button>
+              </div>
+            )}
+
           </div>
         )}
 
@@ -903,6 +1318,259 @@ export function AdminDashboard() {
                 </button>
               </div>
 
+            </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================== */}
+      {/* MODAL: ADD / EDIT MENU ITEM */}
+      {/* ==================================================== */}
+      {itemModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+            
+            <div className="p-4 sm:p-5 border-b border-slate-800 bg-slate-950 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <UtensilsCrossed className="w-5 h-5 text-amber-400" />
+                <h3 className="font-black text-white text-base">
+                  {editingItemId ? 'تعديل بيانات وسعر الصنف' : 'إضافة صنف / طبق جديد للمنيو'}
+                </h3>
+              </div>
+              <button
+                onClick={() => setItemModalOpen(false)}
+                className="p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveItem} className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-300 block mb-1">اسم الصنف بالعربية *</label>
+                  <input
+                    type="text"
+                    required
+                    value={itemNameAr}
+                    onChange={(e) => setItemNameAr(e.target.value)}
+                    placeholder="مثال: سماش برجر أوريجينال"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-amber-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-300 block mb-1">اسم الصنف بالإنجليزية (English) *</label>
+                  <input
+                    type="text"
+                    required
+                    value={itemNameEn}
+                    onChange={(e) => setItemNameEn(e.target.value)}
+                    placeholder="e.g. Original Smash Burger"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-amber-500 focus:outline-none font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-300 block mb-1">السعر (ج.م / EGP) *</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    required
+                    value={itemPrice}
+                    onChange={(e) => setItemPrice(e.target.value)}
+                    placeholder="مثال: 310"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-amber-400 font-mono font-bold focus:border-amber-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-300 block mb-1">القسم التابع له *</label>
+                  <select
+                    value={itemCatId}
+                    onChange={(e) => setItemCatId(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-amber-500 focus:outline-none"
+                  >
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name_ar} ({cat.name_en})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-slate-300 block mb-1">محطة التجهيز وتوجيه الأوردر (KDS Station) *</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setItemStation('kitchen')}
+                      className={`p-3 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-all ${
+                        itemStation === 'kitchen'
+                          ? 'bg-blue-500/20 text-blue-300 border-blue-500 shadow-md'
+                          : 'bg-slate-950 text-slate-400 border-slate-800'
+                      }`}
+                    >
+                      <ChefHat className="w-4 h-4 text-blue-400" />
+                      <span>شاشة المطبخ (Kitchen KDS)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setItemStation('barista')}
+                      className={`p-3 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-all ${
+                        itemStation === 'barista'
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500 shadow-md'
+                          : 'bg-slate-950 text-slate-400 border-slate-800'
+                      }`}
+                    >
+                      <Coffee className="w-4 h-4 text-emerald-400" />
+                      <span>شاشة البار والشيشة (Barista KDS)</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-slate-300 block mb-1">وصف الصنف والمكونات (بالعربية)</label>
+                  <textarea
+                    rows={2}
+                    value={itemDescAr}
+                    onChange={(e) => setItemDescAr(e.target.value)}
+                    placeholder="مثال: قطعة برجر بقري 6 أونصة مع مشروم متبل، بصل مكرمل، وجبنة مونتيري جاك"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-amber-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-slate-300 block mb-1">وصف الصنف (English Description)</label>
+                  <textarea
+                    rows={2}
+                    value={itemDescEn}
+                    onChange={(e) => setItemDescEn(e.target.value)}
+                    placeholder="e.g. 6 oz beef patty, caramelized onion, Monterey Jack cheese with fries"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-amber-500 focus:outline-none"
+                  />
+                </div>
+
+                {/* Tags */}
+                <div className="sm:col-span-2 space-y-2">
+                  <label className="text-xs font-bold text-slate-300 block">علامات الصنف (Tags):</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: 'popular', label: '⭐ الأكثر طلباً (Popular)' },
+                      { id: 'chef_choice', label: '👨‍🍳 اختيار الشيف' },
+                      { id: 'spicy', label: '🔥 حار (Spicy)' },
+                      { id: 'vegetarian', label: '🌿 نباتي (Vegetarian)' }
+                    ].map(tag => (
+                      <button
+                        key={tag.id}
+                        type="button"
+                        onClick={() => handleToggleItemTag(tag.id)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                          itemTags.includes(tag.id)
+                            ? 'bg-amber-500/20 text-amber-300 border-amber-500'
+                            : 'bg-slate-950 text-slate-400 border-slate-800'
+                        }`}
+                      >
+                        {tag.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setItemModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+                >
+                  إلغاء
+                </button>
+
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-black text-xs flex items-center gap-1.5 shadow-lg"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>حفظ الصنف في المنيو</span>
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================== */}
+      {/* MODAL: ADD / EDIT CATEGORY */}
+      {/* ==================================================== */}
+      {catModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
+            
+            <div className="p-4 border-b border-slate-800 bg-slate-950 flex items-center justify-between">
+              <h3 className="font-black text-white text-base">
+                {editingCatId ? 'تعديل بيانات القسم' : 'إضافة قسم جديد في المنيو'}
+              </h3>
+              <button onClick={() => setCatModalOpen(false)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCategory} className="p-5 space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-300 block mb-1">اسم القسم بالعربية *</label>
+                <input
+                  type="text"
+                  required
+                  value={catNameAr}
+                  onChange={(e) => setCatNameAr(e.target.value)}
+                  placeholder="مثال: البرجر وسندوتشات فاخرة"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-amber-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-300 block mb-1">اسم القسم بالإنجليزية (English) *</label>
+                <input
+                  type="text"
+                  required
+                  value={catNameEn}
+                  onChange={(e) => setCatNameEn(e.target.value)}
+                  placeholder="e.g. Burgers & Sandwiches"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-amber-500 focus:outline-none font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-300 block mb-1">محطة التجهيز الافتراضية *</label>
+                <select
+                  value={catStation}
+                  onChange={(e) => setCatStation(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:border-amber-500 focus:outline-none"
+                >
+                  <option value="kitchen">المطبخ (Kitchen)</option>
+                  <option value="barista">البار / المشروبات والشيشة (Barista)</option>
+                </select>
+              </div>
+
+              <div className="pt-3 border-t border-slate-800 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCatModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs"
+                >
+                  حفظ القسم
+                </button>
+              </div>
             </form>
 
           </div>
