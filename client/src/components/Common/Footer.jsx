@@ -1,0 +1,118 @@
+﻿import React from 'react';
+import { useLanguage } from '../../context/LanguageContext';
+import { Phone, MessageCircle, Globe, Heart, ShieldCheck, Zap, ExternalLink } from 'lucide-react';
+
+export function Footer() {
+  const { lang, t } = useLanguage();
+  const phoneNumber = '01018815050';
+  const whatsappUrl = `https://wa.me/201018815050?text=${encodeURIComponent('مرحباً أستاذ أسامة، أود الاستفسار عن باقات نظام QRMate واستاندات الـ NFC لكافيهي/مطعمي.')}`;
+  const linkedinUrl = 'https://www.linkedin.com/in/osama-kamel-dev';
+  const domainUrl = 'https://instafeed.cloud';
+
+  return (
+    <footer className="bg-slate-950 border-t border-slate-800/80 text-slate-400 text-xs font-tajawal pt-12 pb-8 px-4 sm:px-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* Top Row: Brand & Contact Info */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-slate-800/60">
+          
+          {/* Col 1: Brand & Slogan */}
+          <div className="space-y-3 md:col-span-2">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-black font-black text-sm shadow-md">
+                Q
+              </div>
+              <span className="text-lg font-black text-white tracking-tight">QRMate Egypt</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                On-Premise POS & NFC
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed max-w-md">
+              {lang === 'ar'
+                ? 'النظام الأول لإدارة طلبات الطاولات واستاندات الـ NFC والمكعبات الخشبية في مصر. تشغيل محلي 100% بدون انقطاع أو اعتماد على الكلاود مع اشتراك وترخيص سنوي ودعم مستمر.'
+                : 'Egypt\'s premier local-first NFC & QR table ordering, KDS, and POS system. 100% offline resilience with zero cloud dependency and yearly licensing.'}
+            </p>
+            <div className="flex items-center gap-2 pt-1 text-slate-400">
+              <Globe className="w-4 h-4 text-emerald-400" />
+              <a href={domainUrl} target="_blank" rel="noreferrer" className="text-slate-300 hover:text-amber-400 transition-colors font-mono text-xs">
+                instafeed.cloud
+              </a>
+            </div>
+          </div>
+
+          {/* Col 2: Quick Links & Contact */}
+          <div className="space-y-2.5">
+            <h4 className="text-xs font-black text-white uppercase tracking-wider">
+              {lang === 'ar' ? 'تواصل مع المبيعات والدعم' : 'Sales & Support'}
+            </h4>
+            <div className="space-y-2">
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors font-bold text-xs"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>واتساب: {phoneNumber}</span>
+              </a>
+              <a
+                href={`tel:${phoneNumber}`}
+                className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors text-xs font-mono"
+              >
+                <Phone className="w-4 h-4 text-amber-400" />
+                <span>هاتف: {phoneNumber}</span>
+              </a>
+              <p className="text-[11px] text-slate-500">القاهرة - جمهورية مصر العربية</p>
+            </div>
+          </div>
+
+          {/* Col 3: Developer & Agency Credits */}
+          <div className="space-y-2.5">
+            <h4 className="text-xs font-black text-white uppercase tracking-wider">
+              {lang === 'ar' ? 'التطوير والتصميم' : 'Development & Design'}
+            </h4>
+            <div className="space-y-1.5">
+              <p className="text-xs text-slate-300 font-bold">
+                Recode Developments
+              </p>
+              <a
+                href={linkedinUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-800 hover:border-blue-500/40 text-xs font-bold transition-all mt-1"
+              >
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                  <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+                </svg>
+                <span>Osama Kamel (LinkedIn)</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Bottom Row: Copyright & Developer Signature */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500 text-center sm:text-right">
+          <div>
+            © {new Date().getFullYear()} QRMate Egypt. All Rights Reserved. Hosted on <a href={domainUrl} className="text-amber-400 hover:underline">instafeed.cloud</a>
+          </div>
+
+          <div className="flex items-center gap-1 text-slate-400">
+            <span>Developed & Designed with</span>
+            <Heart className="w-3 h-3 text-rose-500 inline fill-rose-500" />
+            <span>by</span>
+            <a
+              href={linkedinUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-amber-400 hover:text-amber-300 font-bold transition-colors underline decoration-amber-500/40 underline-offset-2 ml-1"
+            >
+              Recode Developments (Osama Kamel)
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </footer>
+  );
+}

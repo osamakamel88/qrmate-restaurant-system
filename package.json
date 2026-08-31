@@ -1,0 +1,25 @@
+{
+  "name": "restaurant-onprem-system",
+  "version": "1.0.0",
+  "description": "On-Premises Restaurant & Cafe Ordering, KDS, POS, and NFC/QR System (Egypt)",
+  "scripts": {
+    "start": "node server/server.js",
+    "build": "cd client && npm run build",
+    "build:client": "cd client && npm run build",
+    "dev:server": "node --watch server/server.js",
+    "dev:client": "cd client && npm run dev",
+    "license:generate": "node scripts/issue-license.js"
+  },
+  "keywords": [
+    "restaurant",
+    "pos",
+    "kds",
+    "nfc-menu",
+    "qr-menu",
+    "egypt",
+    "on-premise",
+    "offline-first"
+  ],
+  "author": "DeepMind Agentic Team",
+  "license": "Commercial"
+}
