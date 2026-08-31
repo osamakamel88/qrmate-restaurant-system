@@ -5,7 +5,7 @@ import { X, Droplets, Flame, Sparkles, Send, BellRing, Utensils } from 'lucide-r
 
 export function CallWaiterModal({ tableNumber, onClose }) {
   const { lang, t } = useLanguage();
-  const { playSound } = useSocket();
+  const { playSound, broadcastLocalEvent } = useSocket();
   const [selectedType, setSelectedType] = useState('waiter');
   const [customDetail, setCustomDetail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,16 +20,26 @@ export function CallWaiterModal({ tableNumber, onClose }) {
 
   const handleSendCall = async () => {
     setLoading(true);
+    const callPayload = {
+      id: Date.now(),
+      table_number: parseInt(tableNumber, 10) || 1,
+      type: selectedType,
+      detail: customDetail,
+      payment_preference: 'cash',
+      status: 'pending',
+      created_at: new Date().toISOString()
+    };
+
+    // 1. Broadcast to all screens and play chime immediately
+    if (broadcastLocalEvent) {
+      broadcastLocalEvent('NEW_TABLE_CALL', callPayload);
+    }
+
     try {
-      playSound('call');
-      const res = await fetch(`http://${window.location.hostname}:3001/api/calls`, {
+      await fetch(`http://${window.location.hostname}:3001/api/calls`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          table_number: tableNumber,
-          type: selectedType,
-          detail: customDetail
-        })
+        body: JSON.stringify(callPayload)
       }).catch(() => null);
 
       setSuccess(true);

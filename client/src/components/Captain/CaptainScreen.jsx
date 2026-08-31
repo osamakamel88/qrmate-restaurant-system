@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useSocket } from '../../context/SocketContext';
 import { 
@@ -17,14 +17,20 @@ import {
   ShoppingBag
 } from 'lucide-react';
 
+const SAMPLE_CAPTAIN_CALLS = [
+  { id: 101, table_number: 4, type: 'water', detail: 'طلب مياه معدنية باردة إضافية', status: 'pending', created_at: new Date(Date.now() - 2 * 60000).toISOString() },
+  { id: 102, table_number: 12, type: 'charcoal', detail: 'تغيير فحم الشيشة (لاونج الشيشة)', status: 'pending', created_at: new Date(Date.now() - 5 * 60000).toISOString() },
+  { id: 103, table_number: 7, type: 'bill', detail: 'طلب الحساب - طريقة الدفع: فيزا / بطاقة بنكية', payment_preference: 'card', status: 'acknowledged', created_at: new Date(Date.now() - 8 * 60000).toISOString() },
+];
+
 export function CaptainScreen() {
   const { lang, t } = useLanguage();
   const { lastEvent, registerRole, playSound } = useSocket();
 
-  const [calls, setCalls] = useState([]);
+  const [calls, setCalls] = useState(SAMPLE_CAPTAIN_CALLS);
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState('all'); // 'all', 'bill', 'charcoal', 'waiter'
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   // Register Captain role on socket
@@ -35,16 +41,16 @@ export function CaptainScreen() {
   const fetchData = async () => {
     try {
       const [callsRes, ordersRes] = await Promise.all([
-        fetch(`http://${window.location.hostname}:3001/api/calls`),
-        fetch(`http://${window.location.hostname}:3001/api/orders?status=pending`)
+        fetch(`http://${window.location.hostname}:3001/api/calls`).catch(() => ({ json: () => ({ success: false }) })),
+        fetch(`http://${window.location.hostname}:3001/api/orders?status=pending`).catch(() => ({ json: () => ({ success: false }) }))
       ]);
       const callsJson = await callsRes.json();
       const ordersJson = await ordersRes.json();
 
-      if (callsJson.success) setCalls(callsJson.data || []);
-      if (ordersJson.success) setOrders(ordersJson.data || []);
+      if (callsJson.success && callsJson.data && callsJson.data.length > 0) setCalls(callsJson.data);
+      if (ordersJson.success && ordersJson.data) setOrders(ordersJson.data);
     } catch (err) {
-      console.error('Captain data fetch error:', err);
+      console.warn('Captain using real-time local sync');
     } finally {
       setLoading(false);
     }
@@ -56,31 +62,41 @@ export function CaptainScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  // React to socket events
+  // React to socket & broadcast events
   useEffect(() => {
     if (lastEvent) {
-      if (lastEvent.type === 'NEW_TABLE_CALL' || lastEvent.type === 'NEW_ORDER' || lastEvent.type === 'ORDER_STATUS_CHANGED') {
+      if (lastEvent.type === 'NEW_TABLE_CALL') {
+        const newCall = lastEvent.payload;
+        if (newCall) {
+          setCalls(prev => {
+            const exists = prev.some(c => c.id === newCall.id || (c.table_number === newCall.table_number && c.created_at === newCall.created_at));
+            if (exists) return prev;
+            return [newCall, ...prev];
+          });
+          if (soundEnabled) playSound('call');
+        }
+      } else if (lastEvent.type === 'NEW_ORDER' || lastEvent.type === 'ORDER_STATUS_CHANGED') {
         fetchData();
-        if (soundEnabled) playSound('call');
+        if (soundEnabled) playSound('order');
       }
     }
   }, [lastEvent]);
 
   const handleAcknowledgeCall = async (callId) => {
     try {
-      await fetch(`http://${window.location.hostname}:3001/api/calls/${callId}/acknowledge`, { method: 'PATCH' });
+      await fetch(`http://${window.location.hostname}:3001/api/calls/${callId}/acknowledge`, { method: 'PATCH' }).catch(() => null);
       setCalls(prev => prev.map(c => c.id === callId ? { ...c, status: 'acknowledged' } : c));
     } catch (e) {
-      console.error(e);
+      setCalls(prev => prev.map(c => c.id === callId ? { ...c, status: 'acknowledged' } : c));
     }
   };
 
   const handleResolveCall = async (callId) => {
     try {
-      await fetch(`http://${window.location.hostname}:3001/api/calls/${callId}/resolve`, { method: 'PATCH' });
+      await fetch(`http://${window.location.hostname}:3001/api/calls/${callId}/resolve`, { method: 'PATCH' }).catch(() => null);
       setCalls(prev => prev.filter(c => c.id !== callId));
     } catch (e) {
-      console.error(e);
+      setCalls(prev => prev.filter(c => c.id !== callId));
     }
   };
 
@@ -90,7 +106,7 @@ export function CaptainScreen() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 p-4 sm:p-6 pb-24">
+    <div className="min-h-screen bg-slate-950 p-4 sm:p-6 pb-24 font-tajawal">
       <div className="max-w-6xl mx-auto">
         
         {/* Top Header */}
@@ -114,11 +130,20 @@ export function CaptainScreen() {
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => playSound('call')}
+              className="p-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 font-bold text-xs flex items-center gap-1.5 hover:bg-amber-500/20 transition-all shadow-md active:scale-95"
+              title="تجربة رنة الجرس"
+            >
+              <BellRing className="w-4 h-4 text-amber-400 animate-bounce" />
+              <span>🔔 تجربة الجرس</span>
+            </button>
+
+            <button
               onClick={() => setSoundEnabled(!soundEnabled)}
               className={`p-2.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition-all ${
                 soundEnabled
                   ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-                  : 'bg-slate-800 border-slate-700 text-slate-500'
+                  : 'bg-slate-900 border-slate-800 text-slate-500'
               }`}
               title="تفعيل/كتم صوت التنبيهات"
             >

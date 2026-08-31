@@ -5,7 +5,7 @@ import { X, Receipt, Check, CreditCard, Banknote, Smartphone, Sparkles, Send } f
 
 export function RequestBillModal({ tableNumber, onClose }) {
   const { lang, t } = useLanguage();
-  const { playSound } = useSocket();
+  const { playSound, broadcastLocalEvent } = useSocket();
   const [paymentPref, setPaymentPref] = useState('cash');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -19,16 +19,26 @@ export function RequestBillModal({ tableNumber, onClose }) {
 
   const handleSendBillRequest = async () => {
     setLoading(true);
+    const callPayload = {
+      id: Date.now(),
+      table_number: parseInt(tableNumber, 10) || 1,
+      type: 'bill',
+      detail: `طريقة الدفع المطلوبة: ${paymentPref}`,
+      payment_preference: paymentPref,
+      status: 'pending',
+      created_at: new Date().toISOString()
+    };
+
+    // 1. Broadcast to all screens and trigger bell ring
+    if (broadcastLocalEvent) {
+      broadcastLocalEvent('NEW_TABLE_CALL', callPayload);
+    }
+
     try {
-      playSound('call');
-      const res = await fetch(`http://${window.location.hostname}:3001/api/calls`, {
+      await fetch(`http://${window.location.hostname}:3001/api/calls`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          table_number: tableNumber,
-          type: 'bill',
-          payment_preference: paymentPref
-        })
+        body: JSON.stringify(callPayload)
       }).catch(() => null);
 
       setSuccess(true);

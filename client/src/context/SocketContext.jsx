@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 const SocketContext = createContext();
 
@@ -25,29 +25,32 @@ function playSynthesizedSound(type = 'order') {
         osc.stop(ctx.currentTime + idx * 0.12 + 0.3);
       });
     } else if (type === 'call') {
-      // Bell alert (Ding-Dong)
+      // High-clarity Bell alert (Ding-Dong 880Hz -> 660Hz)
+      const now = ctx.currentTime;
+      
+      // Ding
       const osc1 = ctx.createOscillator();
-      const osc2 = ctx.createOscillator();
       const gain1 = ctx.createGain();
-      const gain2 = ctx.createGain();
-
-      osc1.frequency.setValueAtTime(880, ctx.currentTime);
-      gain1.gain.setValueAtTime(0.4, ctx.currentTime);
-      gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-
-      osc2.frequency.setValueAtTime(700, ctx.currentTime + 0.25);
-      gain2.gain.setValueAtTime(0.4, ctx.currentTime + 0.25);
-      gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.7);
-
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(880, now);
+      gain1.gain.setValueAtTime(0.6, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
       osc1.connect(gain1);
       gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.6);
+
+      // Dong
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(659.25, now + 0.28);
+      gain2.gain.setValueAtTime(0.6, now + 0.28);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
       osc2.connect(gain2);
       gain2.connect(ctx.destination);
-
-      osc1.start(ctx.currentTime);
-      osc1.stop(ctx.currentTime + 0.4);
-      osc2.start(ctx.currentTime + 0.25);
-      osc2.stop(ctx.currentTime + 0.7);
+      osc2.start(now + 0.28);
+      osc2.stop(now + 0.9);
     } else if (type === 'ready') {
       // Celebratory cheerful fanfare (E5 -> G5 -> C6 -> E6)
       const notes = [659.25, 783.99, 1046.50, 1318.51];
@@ -76,6 +79,79 @@ export function SocketProvider({ children }) {
   const wsRef = useRef(null);
   const currentRoleRef = useRef('guest');
   const currentTableRef = useRef(null);
+  const broadcastChannelRef = useRef(null);
+
+  // Process incoming events from WS or BroadcastChannel
+  const handleIncomingEvent = (data) => {
+    if (!data || !data.type) return;
+    setLastEvent(data);
+
+    if (data.type === 'NEW_ORDER') {
+      playSynthesizedSound('order');
+      setActiveNotification({
+        title: `طلب جديد طاولة ${data.payload?.table_number || ''}`,
+        titleEn: `New Order Table ${data.payload?.table_number || ''}`,
+        desc: `${data.payload?.items?.length || 1} أصناف - الإجمالي: ${data.payload?.grand_total || data.payload?.total_amount || 0} ج.م`,
+        type: 'info'
+      });
+    } else if (data.type === 'NEW_TABLE_CALL') {
+      playSynthesizedSound('call');
+      const typeLabels = {
+        waiter: 'طلب ويتر 🙋‍♂️',
+        bill: 'طلب حساب وشيك 💵',
+        water: 'طلب ماء 💧',
+        charcoal: 'تغيير فحم شيشة 🔥',
+        napkins: 'طلب مناديل وأدوات مائدة 🍴',
+        other: 'استدعاء عام'
+      };
+      setActiveNotification({
+        title: `🔔 استدعاء ويتر من طاولة #${data.payload?.table_number}`,
+        titleEn: `🔔 Table #${data.payload?.table_number} Calling Waiter`,
+        desc: typeLabels[data.payload?.type] || data.payload?.type || 'طلب مساعدة فورية',
+        type: 'warning'
+      });
+    } else if (data.type === 'CLIENT_ORDER_READY') {
+      playSynthesizedSound('ready');
+      setActiveNotification({
+        title: '🍽️ طلبك جاهز بالهناء والشفاء!',
+        titleEn: '🍽️ Your order is ready and on the way!',
+        desc: data.payload?.messageAr || data.payload?.messageEn || 'الطلب جاهز الآن',
+        type: 'success',
+        isOrderReady: true
+      });
+    }
+  };
+
+  // Broadcast event across WebSocket + Local BroadcastChannel + LocalStorage
+  const broadcastLocalEvent = (eventType, payload) => {
+    const eventObj = {
+      type: eventType,
+      payload,
+      timestamp: new Date().toISOString()
+    };
+
+    // 1. Handle in current context
+    handleIncomingEvent(eventObj);
+
+    // 2. Send via WebSocket if open
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      try {
+        wsRef.current.send(JSON.stringify(eventObj));
+      } catch (e) {}
+    }
+
+    // 3. Broadcast to other browser tabs via BroadcastChannel
+    if (broadcastChannelRef.current) {
+      try {
+        broadcastChannelRef.current.postMessage(eventObj);
+      } catch (e) {}
+    }
+
+    // 4. Storage fallback for cross-tab sync
+    try {
+      localStorage.setItem('qrmate_realtime_event', JSON.stringify({ ...eventObj, _t: Date.now() }));
+    } catch (e) {}
+  };
 
   const connectWebSocket = () => {
     try {
@@ -84,13 +160,10 @@ export function SocketProvider({ children }) {
       const port = '3001'; // Backend port
       const wsUrl = `${protocol}//${host}:${port}/ws`;
 
-      console.log(`Connecting WS to ${wsUrl}...`);
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
-        console.log('✅ WebSocket Connected to Local Server');
         setIsConnected(true);
-        // Re-register role if previously defined
         if (currentRoleRef.current) {
           ws.send(JSON.stringify({
             type: 'REGISTER_ROLE',
@@ -103,41 +176,7 @@ export function SocketProvider({ children }) {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          setLastEvent(data);
-
-          if (data.type === 'NEW_ORDER') {
-            playSynthesizedSound('order');
-            setActiveNotification({
-              title: `طلب جديد طاولة ${data.payload.table_number || ''}`,
-              titleEn: `New Order Table ${data.payload.table_number || ''}`,
-              desc: `${data.payload.items?.length || 1} أصناف - ${data.payload.total_amount} ج.م`,
-              type: 'info'
-            });
-          } else if (data.type === 'NEW_TABLE_CALL') {
-            playSynthesizedSound('call');
-            const typeLabels = {
-              waiter: 'طلب ويتر 🙋‍♂️',
-              bill: 'طلب حساب وشيك 💵',
-              water: 'طلب ماء 💧',
-              charcoal: 'تغيير فحم شيشة 🔥',
-              other: 'استدعاء عام'
-            };
-            setActiveNotification({
-              title: `تنبيه من طاولة ${data.payload.table_number}`,
-              titleEn: `Alert from Table ${data.payload.table_number}`,
-              desc: typeLabels[data.payload.type] || data.payload.type,
-              type: 'warning'
-            });
-          } else if (data.type === 'CLIENT_ORDER_READY') {
-            playSynthesizedSound('ready');
-            setActiveNotification({
-              title: '🍽️ طلبك جاهز بالهناء والشفاء!',
-              titleEn: '🍽️ Your order is ready and on the way!',
-              desc: data.payload.messageAr || data.payload.messageEn,
-              type: 'success',
-              isOrderReady: true
-            });
-          }
+          handleIncomingEvent(data);
         } catch (err) {
           console.error('Socket message parse error:', err);
         }
@@ -145,26 +184,48 @@ export function SocketProvider({ children }) {
 
       ws.onclose = () => {
         setIsConnected(false);
-        console.log('WS disconnected, reconnecting in 3s...');
         setTimeout(connectWebSocket, 3000);
       };
 
-      ws.onerror = (err) => {
-        console.warn('WS connection notice:', err.message);
+      ws.onerror = () => {
         ws.close();
       };
 
       wsRef.current = ws;
     } catch (err) {
-      console.warn('WebSocket setup error:', err);
       setTimeout(connectWebSocket, 3000);
     }
   };
 
   useEffect(() => {
     connectWebSocket();
+
+    // Setup cross-tab BroadcastChannel
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        const bc = new BroadcastChannel('qrmate_realtime_bus');
+        bc.onmessage = (ev) => {
+          if (ev.data) handleIncomingEvent(ev.data);
+        };
+        broadcastChannelRef.current = bc;
+      } catch (e) {}
+    }
+
+    // Setup Storage Event Listener
+    const handleStorageChange = (e) => {
+      if (e.key === 'qrmate_realtime_event' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          handleIncomingEvent(parsed);
+        } catch (err) {}
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
     return () => {
       if (wsRef.current) wsRef.current.close();
+      if (broadcastChannelRef.current) broadcastChannelRef.current.close();
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
@@ -189,6 +250,7 @@ export function SocketProvider({ children }) {
       registerRole,
       activeNotification,
       clearNotification,
+      broadcastLocalEvent,
       playSound: playSynthesizedSound
     }}>
       {children}
@@ -197,3 +259,4 @@ export function SocketProvider({ children }) {
 }
 
 export const useSocket = () => useContext(SocketContext);
+
