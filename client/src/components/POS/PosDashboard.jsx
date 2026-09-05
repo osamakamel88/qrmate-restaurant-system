@@ -148,21 +148,21 @@ export function PosDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 p-4 sm:p-6 pb-28">
+    <div className="min-h-screen bg-slate-50 p-4 sm:p-6 pb-28 text-slate-900">
       <div className="max-w-7xl mx-auto">
         
         {/* Top Header & Tab Switcher */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200">
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-500/20 text-amber-400 border border-amber-500/30">
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                 Point of Sale (POS)
               </span>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-slate-500 font-medium">
                 {tables.filter(t => t.status === 'occupied').length} / {tables.length} {lang === 'ar' ? 'طاولة مشغولة' : 'tables occupied'}
               </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-white mt-1">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
               {t('posTitle')}
             </h2>
           </div>
@@ -172,8 +172,8 @@ export function PosDashboard() {
               onClick={() => setActiveTab('floor')}
               className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
                 activeTab === 'floor'
-                  ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20'
-                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 shadow-sm'
               }`}
             >
               <Layers className="w-4 h-4" />
@@ -184,8 +184,8 @@ export function PosDashboard() {
               onClick={() => setActiveTab('reports')}
               className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
                 activeTab === 'reports'
-                  ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20'
-                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 shadow-sm'
               }`}
             >
               <FileText className="w-4 h-4" />
@@ -206,38 +206,38 @@ export function PosDashboard() {
                   <div
                     key={tbl.id}
                     onClick={() => handleTableClick(tbl)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between h-36 ${
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between h-36 bg-white shadow-sm ${
                       isOccupied
-                        ? 'bg-gradient-to-br from-amber-950/50 via-slate-900 to-slate-900 border-amber-500/60 shadow-lg shadow-amber-950/30 hover:scale-[1.02]'
-                        : 'bg-slate-900/60 border-slate-800/80 hover:border-slate-700 hover:bg-slate-900 text-slate-400'
+                        ? 'border-rose-300 ring-2 ring-rose-100 hover:scale-[1.02]'
+                        : 'border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/20 text-slate-600'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm ${
-                        isOccupied ? 'bg-amber-500 text-black font-mono shadow-md' : 'bg-slate-800 text-slate-300'
+                        isOccupied ? 'bg-rose-500 text-white font-mono shadow-sm' : 'bg-slate-100 text-slate-700'
                       }`}>
                         #{tbl.table_number}
                       </span>
 
-                      <span className={`w-2.5 h-2.5 rounded-full ${isOccupied ? 'bg-amber-500 animate-pulse' : 'bg-slate-700'}`} />
+                      <span className={`w-2.5 h-2.5 rounded-full ${isOccupied ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`} />
                     </div>
 
                     <div>
-                      <p className="text-[11px] text-slate-400 font-tajawal truncate">
+                      <p className="text-[11px] text-slate-500 font-tajawal truncate">
                         {tbl.section}
                       </p>
                       
                       {isOccupied ? (
                         <div className="mt-1">
-                          <span className="font-mono text-base font-black text-amber-400">
-                            {totalBill} <span className="text-[10px]">{t('currency')}</span>
+                          <span className="font-mono text-base font-black text-slate-900">
+                            {totalBill} <span className="text-[10px] text-slate-500">{t('currency')}</span>
                           </span>
-                          <p className="text-[10px] text-slate-400 font-mono">
+                          <p className="text-[10px] text-rose-600 font-mono font-medium">
                             {tbl.activeOrder.items?.length || 1} أصناف
                           </p>
                         </div>
                       ) : (
-                        <span className="text-xs text-slate-500 font-bold mt-1 block">
+                        <span className="text-xs text-emerald-700 font-bold mt-1 block">
                           {t('available')}
                         </span>
                       )}
@@ -255,36 +255,36 @@ export function PosDashboard() {
             
             {/* KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
-                <span className="text-xs text-slate-400 font-bold">{t('todaySales')}</span>
-                <h3 className="text-2xl font-black text-amber-400 font-mono">
+              <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-1">
+                <span className="text-xs text-slate-500 font-bold">{t('todaySales')}</span>
+                <h3 className="text-2xl font-black text-emerald-600 font-mono">
                   {dailyReport.totalRevenue} {t('currency')}
                 </h3>
-                <p className="text-[11px] text-emerald-400 font-bold">100% On-Premises Local DB</p>
+                <p className="text-[11px] text-emerald-700 font-bold">100% On-Premises Local DB</p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
-                <span className="text-xs text-slate-400 font-bold">{t('todayOrders')}</span>
-                <h3 className="text-2xl font-black text-white font-mono">
+              <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-1">
+                <span className="text-xs text-slate-500 font-bold">{t('todayOrders')}</span>
+                <h3 className="text-2xl font-black text-slate-900 font-mono">
                   {dailyReport.totalOrders}
                 </h3>
-                <p className="text-[11px] text-slate-400">طلب مغلق ومسدد</p>
+                <p className="text-[11px] text-slate-500">طلب مغلق ومسدد</p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
-                <span className="text-xs text-slate-400 font-bold">{t('vat14')} المحصلة</span>
-                <h3 className="text-2xl font-black text-blue-400 font-mono">
+              <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-1">
+                <span className="text-xs text-slate-500 font-bold">{t('vat14')} المحصلة</span>
+                <h3 className="text-2xl font-black text-slate-800 font-mono">
                   {dailyReport.totalVat} {t('currency')}
                 </h3>
-                <p className="text-[11px] text-slate-400">ضريبة القيمة المضافة 14%</p>
+                <p className="text-[11px] text-slate-500">ضريبة القيمة المضافة 14%</p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
-                <span className="text-xs text-slate-400 font-bold">{t('service12')}</span>
-                <h3 className="text-2xl font-black text-purple-400 font-mono">
+              <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-1">
+                <span className="text-xs text-slate-500 font-bold">{t('service12')}</span>
+                <h3 className="text-2xl font-black text-slate-800 font-mono">
                   {dailyReport.totalService} {t('currency')}
                 </h3>
-                <p className="text-[11px] text-slate-400">خدمة الصالة 12%</p>
+                <p className="text-[11px] text-slate-500">خدمة الصالة 12%</p>
               </div>
             </div>
 
@@ -292,18 +292,18 @@ export function PosDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
               {/* Payment Methods */}
-              <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800">
-                <h3 className="text-sm font-black text-white mb-4 flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-amber-400" />
+              <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm">
+                <h3 className="text-sm font-black text-slate-900 mb-4 flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-emerald-600" />
                   <span>توزيع طرق الدفع (Cash / Visa / InstaPay / Vodafone)</span>
                 </h3>
                 <div className="space-y-3">
                   {Object.entries(dailyReport.paymentBreakdown || {}).map(([method, amount]) => (
-                    <div key={method} className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
-                      <span className="text-xs font-bold text-slate-300 uppercase">
+                    <div key={method} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+                      <span className="text-xs font-bold text-slate-700 uppercase">
                         {method === 'cash' ? '💵 كاش نقدى' : method === 'card' ? '💳 بطاقة بنكية / فيزا' : method === 'instapay' ? '📱 إنستاباي InstaPay' : '🔴 فودافون كاش'}
                       </span>
-                      <span className="font-mono text-sm font-black text-amber-400">
+                      <span className="font-mono text-sm font-black text-emerald-700">
                         {amount} {t('currency')}
                       </span>
                     </div>
@@ -312,25 +312,25 @@ export function PosDashboard() {
               </div>
 
               {/* Top 10 Best Sellers */}
-              <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800">
-                <h3 className="text-sm font-black text-white mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-emerald-400" />
+              <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm">
+                <h3 className="text-sm font-black text-slate-900 mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-emerald-600" />
                   <span>{t('topSelling')}</span>
                 </h3>
                 <div className="space-y-2.5 max-h-64 overflow-y-auto">
                   {dailyReport.topItems && dailyReport.topItems.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+                    <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
                       <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center font-bold text-[10px]">
+                        <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[10px]">
                           {idx + 1}
                         </span>
-                        <span className="font-bold text-white truncate max-w-[180px]">
+                        <span className="font-bold text-slate-900 truncate max-w-[180px]">
                           {lang === 'ar' ? item.item_name_ar : item.item_name_en}
                         </span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-slate-400 font-mono">{item.total_qty} طلب</span>
-                        <span className="font-mono font-bold text-amber-400">{item.total_sales} {t('currency')}</span>
+                        <span className="text-slate-500 font-mono">{item.total_qty} طلب</span>
+                        <span className="font-mono font-bold text-emerald-700">{item.total_sales} {t('currency')}</span>
                       </div>
                     </div>
                   ))}
@@ -346,23 +346,23 @@ export function PosDashboard() {
 
       {/* Checkout Modal */}
       {checkoutModalOpen && selectedTable && selectedTable.activeOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             
             {/* Header */}
-            <div className="p-4 sm:p-5 border-b border-slate-800 bg-slate-950 flex items-center justify-between">
+            <div className="p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-black text-white flex items-center gap-2">
-                  <Receipt className="w-5 h-5 text-amber-400" />
+                <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                  <Receipt className="w-5 h-5 text-emerald-600" />
                   {t('settleBill')} - {t('table')} #{selectedTable.table_number}
                 </h3>
-                <p className="text-xs text-slate-400 font-mono">
+                <p className="text-xs text-slate-500 font-mono">
                   {selectedTable.activeOrder.order_number}
                 </p>
               </div>
               <button
                 onClick={() => setCheckoutModalOpen(false)}
-                className="p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-white"
+                className="p-1.5 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -372,11 +372,11 @@ export function PosDashboard() {
             <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3">
               <div className="space-y-2">
                 {selectedTable.activeOrder.items && selectedTable.activeOrder.items.map((it, idx) => (
-                  <div key={idx} className="flex justify-between items-center text-xs p-2 rounded-xl bg-slate-950 border border-slate-800">
-                    <span className="font-bold text-white">
+                  <div key={idx} className="flex justify-between items-center text-xs p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                    <span className="font-bold text-slate-800">
                       {it.quantity}x {lang === 'ar' ? it.item_name_ar : it.item_name_en}
                     </span>
-                    <span className="font-mono text-amber-400 font-bold">
+                    <span className="font-mono text-emerald-700 font-black">
                       {it.price * it.quantity} {t('currency')}
                     </span>
                   </div>
@@ -385,7 +385,7 @@ export function PosDashboard() {
 
               {/* Discount Input */}
               <div className="pt-2">
-                <label className="text-xs font-bold text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 block mb-1">
                   {t('discount')} (ج.م)
                 </label>
                 <input
@@ -393,13 +393,13 @@ export function PosDashboard() {
                   value={discountAmount}
                   onChange={(e) => setDiscountAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-amber-500 font-mono"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 font-mono"
                 />
               </div>
 
               {/* Payment Methods */}
               <div className="pt-2">
-                <label className="text-xs font-bold text-slate-300 block mb-1.5">
+                <label className="text-xs font-bold text-slate-700 block mb-1.5">
                   طريقة الدفع
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -415,8 +415,8 @@ export function PosDashboard() {
                       onClick={() => setPaymentMethod(pm.id)}
                       className={`p-2.5 rounded-xl border text-xs font-bold transition-all ${
                         paymentMethod === pm.id
-                          ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                          : 'bg-slate-950 border-slate-800 text-slate-400'
+                          ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-sm'
+                          : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                       }`}
                     >
                       {pm.label}
@@ -426,10 +426,10 @@ export function PosDashboard() {
               </div>
 
               {/* Summary calculations */}
-              <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5 text-xs text-slate-400">
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs text-slate-600">
                 <div className="flex justify-between">
                   <span>{t('subtotal')}</span>
-                  <span className="font-mono text-white">{selectedTable.activeOrder.subtotal} {t('currency')}</span>
+                  <span className="font-mono text-slate-900 font-bold">{selectedTable.activeOrder.subtotal} {t('currency')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>{t('vat14')}</span>
@@ -439,9 +439,9 @@ export function PosDashboard() {
                   <span>{t('service12')}</span>
                   <span className="font-mono">{selectedTable.activeOrder.service_fee} {t('currency')}</span>
                 </div>
-                <div className="flex justify-between pt-2 border-t border-slate-800 text-sm font-black text-white">
-                  <span className="text-amber-400">{t('total')}</span>
-                  <span className="font-mono text-amber-400 text-base">
+                <div className="flex justify-between pt-2 border-t border-slate-200 text-sm font-black text-slate-900">
+                  <span className="text-emerald-700">{t('total')}</span>
+                  <span className="font-mono text-emerald-700 text-base font-black">
                     {Math.max(0, selectedTable.activeOrder.total_amount - parseFloat(discountAmount || 0))} {t('currency')}
                   </span>
                 </div>
@@ -449,10 +449,10 @@ export function PosDashboard() {
             </div>
 
             {/* Footer */}
-            <div className="p-4 sm:p-5 border-t border-slate-800 bg-slate-950 flex items-center gap-2">
+            <div className="p-4 sm:p-5 border-t border-slate-200 bg-slate-50 flex items-center gap-2">
               <button
                 onClick={handleProcessCheckout}
-                className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 text-sm transition-all"
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 px-4 rounded-xl shadow-sm flex items-center justify-center gap-2 text-sm transition-all"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>إتمام التحصيل وإغلاق الطاولة</span>
@@ -465,24 +465,24 @@ export function PosDashboard() {
 
       {/* Thermal Receipt Print Modal / Preview */}
       {printedReceipt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-5">
             
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-sm font-black text-white flex items-center gap-1.5">
-                <Printer className="w-4 h-4 text-amber-400" />
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <h3 className="text-sm font-black text-slate-900 flex items-center gap-1.5">
+                <Printer className="w-4 h-4 text-emerald-600" />
                 معاينة الإيصال الحراري 80 مم
               </h3>
               <button
                 onClick={() => setPrintedReceipt(null)}
-                className="p-1 rounded-full bg-slate-800 text-slate-400 hover:text-white"
+                className="p-1 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Receipt Preview (Styled like standard 80mm ESC/POS thermal slip) */}
-            <div id="thermal-receipt" className="my-4 p-4 rounded-xl bg-white text-black font-mono text-xs shadow-inner space-y-2.5">
+            <div id="thermal-receipt" className="my-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-black font-mono text-xs shadow-inner space-y-2.5">
               <div className="text-center pb-2 border-b border-dashed border-gray-400">
                 <h2 className="font-black text-sm">{printedReceipt.venueNameAr}</h2>
                 <p className="text-[10px]">{printedReceipt.venueNameEn}</p>
@@ -541,7 +541,7 @@ export function PosDashboard() {
             <div className="flex items-center gap-2 pt-2">
               <button
                 onClick={handlePrint}
-                className="flex-1 bg-amber-500 hover:bg-amber-400 text-black font-black py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-md"
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
               >
                 <Printer className="w-4 h-4" />
                 <span>{t('printReceipt')}</span>

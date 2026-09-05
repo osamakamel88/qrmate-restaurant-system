@@ -10,31 +10,31 @@ export function Footer() {
   const domainUrl = 'https://instafeed.cloud';
 
   return (
-    <footer className="bg-slate-950 border-t border-slate-800/80 text-slate-400 text-xs font-tajawal pt-12 pb-8 px-4 sm:px-6">
+    <footer className="bg-white border-t border-slate-200 text-slate-600 text-xs font-tajawal pt-12 pb-8 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Top Row: Brand & Contact Info */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-slate-800/60">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-slate-200/80">
           
           {/* Col 1: Brand & Slogan */}
           <div className="space-y-3 md:col-span-2">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-black font-black text-sm shadow-md">
+              <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-black text-sm shadow-sm">
                 Q
               </div>
-              <span className="text-lg font-black text-white tracking-tight">QRMate Egypt</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-400 border border-amber-500/30">
+              <span className="text-lg font-black text-slate-900 tracking-tight">QRMate Egypt</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
                 On-Premise POS & NFC
               </span>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed max-w-md">
+            <p className="text-xs text-slate-600 leading-relaxed max-w-md">
               {lang === 'ar'
                 ? 'النظام الأول لإدارة طلبات الطاولات واستاندات الـ NFC والمكعبات الخشبية في مصر. تشغيل محلي 100% بدون انقطاع أو اعتماد على الكلاود مع اشتراك وترخيص سنوي ودعم مستمر.'
                 : 'Egypt\'s premier local-first NFC & QR table ordering, KDS, and POS system. 100% offline resilience with zero cloud dependency and yearly licensing.'}
             </p>
-            <div className="flex items-center gap-2 pt-1 text-slate-400">
-              <Globe className="w-4 h-4 text-emerald-400" />
-              <span className="text-slate-300 font-mono text-xs">
+            <div className="flex items-center gap-2 pt-1 text-slate-500">
+              <Globe className="w-4 h-4 text-emerald-600" />
+              <span className="text-slate-600 font-mono text-xs">
                 QRMate On-Premise System
               </span>
             </div>
@@ -42,7 +42,7 @@ export function Footer() {
 
           {/* Col 2: Quick Links & Contact */}
           <div className="space-y-2.5">
-            <h4 className="text-xs font-black text-white uppercase tracking-wider">
+            <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
               {lang === 'ar' ? 'تواصل مع المبيعات والدعم' : 'Sales & Support'}
             </h4>
             <div className="space-y-2">
@@ -50,16 +50,16 @@ export function Footer() {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors font-bold text-xs"
+                className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 transition-colors font-bold text-xs"
               >
                 <MessageCircle className="w-4 h-4" />
                 <span>واتساب: {phoneNumber}</span>
               </a>
               <a
                 href={`tel:${phoneNumber}`}
-                className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors text-xs font-mono"
+                className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors text-xs font-mono"
               >
-                <Phone className="w-4 h-4 text-amber-400" />
+                <Phone className="w-4 h-4 text-emerald-600" />
                 <span>هاتف: {phoneNumber}</span>
               </a>
               <p className="text-[11px] text-slate-500">القاهرة - جمهورية مصر العربية</p>
@@ -68,7 +68,7 @@ export function Footer() {
 
           {/* Col 3: Developer & Agency Credits */}
           <div className="space-y-2.5">
-            <h4 className="text-xs font-black text-white uppercase tracking-wider">
+            <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
               {lang === 'ar' ? 'التطوير والتصميم' : 'Development & Design'}
             </h4>
             <div className="space-y-1.5">
@@ -76,7 +76,7 @@ export function Footer() {
                 href={recodeUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 hover:text-amber-300 border border-slate-800 hover:border-amber-500/40 text-xs font-bold transition-all mt-1"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-200 text-xs font-bold transition-all mt-1"
               >
                 <span>Recode Developments</span>
                 <ExternalLink className="w-3 h-3 text-slate-400" />
@@ -92,7 +92,7 @@ export function Footer() {
             © {new Date().getFullYear()} QRMate Egypt. All Rights Reserved.
           </div>
 
-          <div className="flex items-center gap-1 text-slate-400">
+          <div className="flex items-center gap-1 text-slate-500">
             <span>Developed & Designed with</span>
             <Heart className="w-3 h-3 text-rose-500 inline fill-rose-500" />
             <span>by</span>
@@ -100,7 +100,7 @@ export function Footer() {
               href={recodeUrl}
               target="_blank"
               rel="noreferrer"
-              className="text-amber-400 hover:text-amber-300 font-bold transition-colors underline decoration-amber-500/40 underline-offset-2 ml-1"
+              className="text-emerald-600 hover:text-emerald-700 font-bold transition-colors"
             >
               Recode Developments
             </a>

@@ -62,7 +62,7 @@ function AppContent() {
   const { isPinModalOpen, setIsPinModalOpen } = useAuth();
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-cairo">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-cairo selection:bg-emerald-100 selection:text-emerald-900">
       
       {/* Toast Notification Container */}
       <ToastNotification />

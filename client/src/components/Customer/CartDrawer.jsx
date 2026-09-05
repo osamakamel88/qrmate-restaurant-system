@@ -78,20 +78,20 @@ export function CartDrawer({ isOpen, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-black/80 backdrop-blur-sm animate-fadeIn flex justify-end">
-      <div className="w-full max-w-md bg-slate-900 border-l border-slate-800 h-full shadow-2xl flex flex-col">
+    <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/40 backdrop-blur-sm animate-fadeIn flex justify-end">
+      <div className="w-full max-w-md bg-white border-l border-slate-200 h-full shadow-2xl flex flex-col">
         
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-800 bg-slate-950 flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center">
               <ShoppingBag className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-black text-white text-base">
+              <h3 className="font-black text-slate-900 text-base">
                 {t('viewCart')} ({totalItemsCount})
               </h3>
-              <p className="text-xs text-amber-400 font-bold">
+              <p className="text-xs text-emerald-700 font-bold">
                 {t('table')} #{tableNumber}
               </p>
             </div>
@@ -99,7 +99,7 @@ export function CartDrawer({ isOpen, onClose }) {
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700"
+            className="p-1.5 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -108,26 +108,26 @@ export function CartDrawer({ isOpen, onClose }) {
         {/* Success State */}
         {successOrder ? (
           <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4">
-            <div className="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500/40 flex items-center justify-center animate-bounce-short">
+            <div className="w-20 h-20 rounded-full bg-emerald-50 text-emerald-600 border-2 border-emerald-200 flex items-center justify-center animate-bounce-short">
               <CheckCircle2 className="w-10 h-10" />
             </div>
-            <h4 className="text-xl font-black text-white">
+            <h4 className="text-xl font-black text-slate-900">
               {t('orderSentSuccess')}
             </h4>
-            <p className="text-xs sm:text-sm text-slate-300 font-tajawal max-w-xs">
+            <p className="text-xs sm:text-sm text-slate-600 font-tajawal max-w-xs">
               {lang === 'ar' ? `رقم الطلب: ${successOrder.order_number}. يمكنك متابعة حالة الطلب مباشرة من الشاشة!` : `Order #${successOrder.order_number}. Track real-time progress right on your table screen!`}
             </p>
           </div>
         ) : cart.length === 0 ? (
           /* Empty State */
           <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-3">
-            <div className="w-16 h-16 rounded-2xl bg-slate-800/80 text-slate-500 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center">
               <ShoppingBag className="w-8 h-8" />
             </div>
-            <h4 className="text-base font-bold text-slate-300">
+            <h4 className="text-base font-bold text-slate-700">
               {t('emptyCart')}
             </h4>
-            <p className="text-xs text-slate-500 max-w-xs font-tajawal">
+            <p className="text-xs text-slate-400 max-w-xs font-tajawal">
               {t('emptyCartDesc')}
             </p>
           </div>
@@ -137,10 +137,10 @@ export function CartDrawer({ isOpen, onClose }) {
             {cart.map((item) => (
               <div
                 key={item.cartItemId}
-                className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex items-start justify-between gap-3 shadow-sm"
+                className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start justify-between gap-3 shadow-sm"
               >
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-extrabold text-white text-sm truncate">
+                  <h4 className="font-extrabold text-slate-900 text-sm truncate">
                     {lang === 'ar' ? item.name_ar : item.name_en}
                   </h4>
                   
@@ -148,7 +148,7 @@ export function CartDrawer({ isOpen, onClose }) {
                   {item.selectedModifiers && item.selectedModifiers.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
                       {item.selectedModifiers.map((m, idx) => (
-                        <span key={idx} className="text-[10px] bg-slate-800 text-amber-300 px-1.5 py-0.5 rounded-md border border-slate-700">
+                        <span key={idx} className="text-[10px] bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded-md border border-emerald-200">
                           {m.label} {m.price > 0 && `(+${m.price})`}
                         </span>
                       ))}
@@ -157,30 +157,30 @@ export function CartDrawer({ isOpen, onClose }) {
 
                   {/* Notes */}
                   {item.itemNotes && (
-                    <p className="text-[11px] text-slate-400 font-tajawal mt-1 italic">
+                    <p className="text-[11px] text-slate-500 font-tajawal mt-1 italic">
                       📝 {item.itemNotes}
                     </p>
                   )}
 
-                  <div className="font-mono text-amber-400 font-bold text-xs mt-1.5">
+                  <div className="font-mono text-emerald-700 font-bold text-xs mt-1.5">
                     {item.unitPrice * item.quantity} {t('currency')}
                   </div>
                 </div>
 
                 {/* Quantity Controls */}
-                <div className="flex items-center bg-slate-900 rounded-xl p-1 border border-slate-800 flex-shrink-0">
+                <div className="flex items-center bg-white rounded-xl p-1 border border-slate-200 flex-shrink-0">
                   <button
                     onClick={() => updateQuantity(item.cartItemId, -1)}
-                    className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300"
+                    className="p-1 rounded-lg hover:bg-slate-100 text-slate-600"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="w-6 text-center font-extrabold text-white text-xs">
+                  <span className="w-6 text-center font-extrabold text-slate-900 text-xs">
                     {item.quantity}
                   </span>
                   <button
                     onClick={() => updateQuantity(item.cartItemId, 1)}
-                    className="p-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-black"
+                    className="p-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -190,7 +190,7 @@ export function CartDrawer({ isOpen, onClose }) {
 
             {/* General notes input */}
             <div className="pt-2">
-              <label className="text-xs font-bold text-slate-300 block mb-1">
+              <label className="text-xs font-bold text-slate-700 block mb-1">
                 {t('notes')} للمطبخ / البار
               </label>
               <textarea
@@ -198,7 +198,7 @@ export function CartDrawer({ isOpen, onClose }) {
                 value={guestNotes}
                 onChange={(e) => setGuestNotes(e.target.value)}
                 placeholder="أي طلب خاص بالطاولة..."
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-amber-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white"
               />
             </div>
           </div>
@@ -206,11 +206,11 @@ export function CartDrawer({ isOpen, onClose }) {
 
         {/* Footer Totals & CTA */}
         {cart.length > 0 && !successOrder && (
-          <div className="p-4 sm:p-5 border-t border-slate-800 bg-slate-950 space-y-3">
-            <div className="space-y-1.5 text-xs text-slate-400">
+          <div className="p-4 sm:p-5 border-t border-slate-100 bg-slate-50/80 space-y-3">
+            <div className="space-y-1.5 text-xs text-slate-600">
               <div className="flex justify-between">
                 <span>{t('subtotal')}</span>
-                <span className="font-mono text-white font-bold">{subtotal} {t('currency')}</span>
+                <span className="font-mono text-slate-900 font-bold">{subtotal} {t('currency')}</span>
               </div>
               <div className="flex justify-between">
                 <span>{t('vat14')}</span>
@@ -220,16 +220,16 @@ export function CartDrawer({ isOpen, onClose }) {
                 <span>{t('service12')}</span>
                 <span className="font-mono">{serviceFee} {t('currency')}</span>
               </div>
-              <div className="flex justify-between pt-2 border-t border-slate-800 text-sm font-black text-white">
-                <span className="text-amber-400">{t('total')}</span>
-                <span className="font-mono text-amber-400 text-base">{grandTotal} {t('currency')}</span>
+              <div className="flex justify-between pt-2 border-t border-slate-200 text-sm font-black text-slate-900">
+                <span className="text-slate-900">{t('total')}</span>
+                <span className="font-mono text-emerald-700 text-base font-extrabold">{grandTotal} {t('currency')}</span>
               </div>
             </div>
 
             <button
               onClick={handlePlaceOrder}
               disabled={loading}
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-black py-3.5 px-4 rounded-xl shadow-lg shadow-orange-950/60 flex items-center justify-center gap-2 text-sm transition-all disabled:opacity-50"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 px-4 rounded-xl shadow-sm shadow-emerald-700/20 flex items-center justify-center gap-2 text-sm transition-all disabled:opacity-50 active:scale-95"
             >
               <Send className="w-4 h-4" />
               <span>{loading ? t('loading') : t('orderNow')}</span>

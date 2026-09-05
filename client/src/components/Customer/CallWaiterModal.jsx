@@ -12,10 +12,10 @@ export function CallWaiterModal({ tableNumber, onClose }) {
   const [success, setSuccess] = useState(false);
 
   const options = [
-    { id: 'waiter', label: t('askOther'), icon: BellRing, color: 'from-amber-500 to-orange-500' },
-    { id: 'water', label: t('askWater'), icon: Droplets, color: 'from-blue-500 to-cyan-500' },
-    { id: 'charcoal', label: t('askCharcoal'), icon: Flame, color: 'from-red-500 to-amber-600' },
-    { id: 'napkins', label: t('askNapkins'), icon: Utensils, color: 'from-emerald-500 to-teal-500' },
+    { id: 'waiter', label: t('askOther'), icon: BellRing, color: 'bg-emerald-600 text-white' },
+    { id: 'water', label: t('askWater'), icon: Droplets, color: 'bg-emerald-500 text-white' },
+    { id: 'charcoal', label: t('askCharcoal'), icon: Flame, color: 'bg-emerald-600 text-white' },
+    { id: 'napkins', label: t('askNapkins'), icon: Utensils, color: 'bg-emerald-500 text-white' },
   ];
 
   const handleSendCall = async () => {
@@ -57,23 +57,23 @@ export function CallWaiterModal({ tableNumber, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl p-5 sm:p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl p-5 sm:p-6">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div>
-            <h3 className="text-lg font-black text-white flex items-center gap-2">
-              <BellRing className="w-5 h-5 text-amber-400" />
+            <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+              <BellRing className="w-5 h-5 text-emerald-600" />
               {t('selectAssistanceType')} #{tableNumber}
             </h3>
-            <p className="text-xs text-slate-400 font-tajawal mt-0.5">
+            <p className="text-xs text-slate-500 font-tajawal mt-0.5">
               {lang === 'ar' ? 'سيصلك الويتر خلال لحظات' : 'A waiter will attend your table shortly'}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-white"
+            className="p-1.5 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -81,13 +81,13 @@ export function CallWaiterModal({ tableNumber, onClose }) {
 
         {success ? (
           <div className="py-8 text-center space-y-3">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto animate-bounce-short">
+            <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto animate-bounce-short">
               <Sparkles className="w-8 h-8" />
             </div>
-            <h4 className="text-lg font-extrabold text-white">
+            <h4 className="text-lg font-extrabold text-slate-900">
               {t('callSent')}
             </h4>
-            <p className="text-xs text-slate-400 font-tajawal">
+            <p className="text-xs text-slate-500 font-tajawal">
               {lang === 'ar' ? 'الويتر في طريقه إلى طاولتك الآن' : 'Our team has received your call'}
             </p>
           </div>
@@ -103,11 +103,11 @@ export function CallWaiterModal({ tableNumber, onClose }) {
                     onClick={() => setSelectedType(opt.id)}
                     className={`p-3.5 rounded-2xl border text-right sm:text-center flex items-center sm:flex-col justify-start sm:justify-center gap-2.5 transition-all ${
                       isSelected
-                        ? 'bg-amber-500/20 border-amber-500 text-amber-300 ring-2 ring-amber-500/40 shadow-lg'
-                        : 'bg-slate-800/60 border-slate-700/80 text-slate-300 hover:bg-slate-800'
+                        ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-1 ring-emerald-500/40 shadow-sm'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
-                    <div className={`p-2 rounded-xl bg-gradient-to-tr ${opt.color} text-white shadow-sm flex-shrink-0`}>
+                    <div className={`p-2 rounded-xl ${opt.color} shadow-sm flex-shrink-0`}>
                       <Icon className="w-5 h-5" />
                     </div>
                     <span className="text-xs font-bold leading-tight">{opt.label}</span>
@@ -123,7 +123,7 @@ export function CallWaiterModal({ tableNumber, onClose }) {
                 value={customDetail}
                 onChange={(e) => setCustomDetail(e.target.value)}
                 placeholder={lang === 'ar' ? 'تفاصيل إضافية للطلب (اختياري)...' : 'Additional note for waiter (optional)...'}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-amber-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white"
               />
             </div>
 
@@ -131,7 +131,7 @@ export function CallWaiterModal({ tableNumber, onClose }) {
             <button
               onClick={handleSendCall}
               disabled={loading}
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-lg shadow-orange-950/60 flex items-center justify-center gap-2 text-sm transition-all disabled:opacity-50"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-sm shadow-emerald-700/20 flex items-center justify-center gap-2 text-sm transition-all disabled:opacity-50 active:scale-95"
             >
               <Send className="w-4 h-4" />
               <span>{loading ? t('loading') : t('sendCall')}</span>

@@ -111,10 +111,10 @@ export function CustomerMenu({ onOpenCart }) {
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 pb-28">
+    <div className="min-h-screen bg-slate-50 pb-28">
       
       {/* Venue Hero Banner */}
-      <div className="relative bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-b border-slate-800/80 pt-6 pb-8 px-4 sm:px-6">
+      <div className="relative bg-white border-b border-slate-200/80 pt-6 pb-8 px-4 sm:px-6 shadow-sm">
         <div className="max-w-4xl mx-auto">
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -122,19 +122,19 @@ export function CustomerMenu({ onOpenCart }) {
             {/* Venue Profile */}
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
                   {lang === 'ar' ? 'القائمة الرقمية الذكية' : 'Smart Digital Menu'}
                 </span>
-                <span className="text-xs text-slate-400 flex items-center gap-1">
-                  <Wifi className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-xs text-slate-500 flex items-center gap-1">
+                  <Wifi className="w-3.5 h-3.5 text-emerald-600" />
                   {settings.wifi_ssid || 'El-Aseel-Guest'}
                 </span>
               </div>
 
-              <h2 className="text-2xl sm:text-3xl font-black text-white mt-1.5 tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1.5 tracking-tight">
                 {lang === 'ar' ? (settings.venue_name_ar || 'كافيه وبسترو الأصيل') : (settings.venue_name_en || 'El Aseel Cafe & Bistro')}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-400 font-tajawal mt-0.5">
+              <p className="text-xs sm:text-sm text-slate-500 font-tajawal mt-0.5">
                 {lang === 'ar' ? settings.slogan_ar : settings.slogan_en}
               </p>
             </div>
@@ -145,18 +145,18 @@ export function CustomerMenu({ onOpenCart }) {
               {/* Call Waiter */}
               <button
                 onClick={() => setShowCallWaiterModal(true)}
-                className="px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-amber-400 font-bold text-xs flex items-center gap-1.5 shadow-md hover:border-amber-500/50 transition-all"
+                className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all"
               >
-                <BellRing className="w-4 h-4 text-amber-400 animate-pulse" />
+                <BellRing className="w-4 h-4 text-amber-500 animate-pulse" />
                 <span>{t('callWaiter')}</span>
               </button>
 
               {/* Request Bill */}
               <button
                 onClick={() => setShowRequestBillModal(true)}
-                className="px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-emerald-400 font-bold text-xs flex items-center gap-1.5 shadow-md hover:border-emerald-500/50 transition-all"
+                className="px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all"
               >
-                <Receipt className="w-4 h-4 text-emerald-400" />
+                <Receipt className="w-4 h-4 text-emerald-600" />
                 <span>{t('requestBill')}</span>
               </button>
 
@@ -172,7 +172,7 @@ export function CustomerMenu({ onOpenCart }) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('searchPlaceholder')}
-              className="w-full bg-slate-900/90 border border-slate-800 rounded-2xl pr-10 pl-4 py-2.5 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 shadow-inner"
+              className="w-full bg-slate-50 border border-slate-200 rounded-2xl pr-10 pl-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white shadow-sm transition-all"
             />
           </div>
 
@@ -185,13 +185,13 @@ export function CustomerMenu({ onOpenCart }) {
         <TableProgressBanner tableNumber={tableNumber} />
 
         {/* Category Navigation Pills */}
-        <div className="sticky top-16 z-30 bg-slate-950/90 backdrop-blur-md py-3 mb-4 -mx-3 px-3 sm:-mx-6 sm:px-6 overflow-x-auto no-scrollbar flex items-center gap-2 border-b border-slate-800/50">
+        <div className="sticky top-16 z-30 bg-slate-50/95 backdrop-blur-md py-3 mb-4 -mx-3 px-3 sm:-mx-6 sm:px-6 overflow-x-auto no-scrollbar flex items-center gap-2 border-b border-slate-200/60">
           <button
             onClick={() => setActiveCategory('all')}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
               activeCategory === 'all'
-                ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20 font-extrabold'
-                : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-700/20 font-extrabold'
+                : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
@@ -207,8 +207,8 @@ export function CustomerMenu({ onOpenCart }) {
                 onClick={() => setActiveCategory(cat.id)}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
                   isActive
-                    ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20 font-extrabold'
-                    : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                    ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-700/20 font-extrabold'
+                    : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
                 }`}
               >
                 <IconComponent className="w-3.5 h-3.5" />
@@ -220,13 +220,13 @@ export function CustomerMenu({ onOpenCart }) {
 
         {/* Items Grid */}
         {loading ? (
-          <div className="py-20 text-center text-slate-500 font-bold text-sm">
+          <div className="py-20 text-center text-slate-400 font-bold text-sm">
             {t('loading')}
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="py-20 text-center space-y-2">
-            <p className="text-slate-400 font-bold text-sm">لا توجد نتائج مطابقة للبحث</p>
-            <p className="text-xs text-slate-600">جرب البحث بكلمات أخرى أو اختر قسماً مختلفاً</p>
+            <p className="text-slate-600 font-bold text-sm">لا توجد نتائج مطابقة للبحث</p>
+            <p className="text-xs text-slate-400">جرب البحث بكلمات أخرى أو اختر قسماً مختلفاً</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
@@ -238,7 +238,7 @@ export function CustomerMenu({ onOpenCart }) {
                 <div
                   key={item.id}
                   onClick={() => !isOutOfStock && setSelectedItemForCustomize(item)}
-                  className={`group rounded-2xl bg-slate-900/90 border border-slate-800/90 p-4 transition-all flex flex-col justify-between hover:border-amber-500/40 hover:shadow-xl hover:shadow-black/40 cursor-pointer ${
+                  className={`group rounded-2xl bg-white border border-slate-200/80 p-4 transition-all flex flex-col justify-between hover:border-emerald-300 hover:shadow-md cursor-pointer ${
                     isOutOfStock ? 'opacity-50 pointer-events-none' : ''
                   }`}
                 >
@@ -249,7 +249,7 @@ export function CustomerMenu({ onOpenCart }) {
                         {item.tags && item.tags.map((tag, tIdx) => (
                           <span
                             key={tIdx}
-                            className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                            className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200"
                           >
                             {tag === 'popular' ? t('popular') : tag === 'chef_choice' ? t('chefChoice') : tag === 'spicy' ? t('spicy') : tag === 'vegan' ? t('vegan') : tag}
                           </span>
@@ -261,22 +261,22 @@ export function CustomerMenu({ onOpenCart }) {
                       </span>
                     </div>
 
-                    <h3 className="font-black text-white text-base leading-snug group-hover:text-amber-400 transition-colors">
+                    <h3 className="font-black text-slate-900 text-base leading-snug group-hover:text-emerald-700 transition-colors">
                       {lang === 'ar' ? item.name_ar : item.name_en}
                     </h3>
-                    <p className="text-xs text-slate-400 font-tajawal mt-1 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-slate-500 font-tajawal mt-1 line-clamp-2 leading-relaxed">
                       {lang === 'ar' ? item.description_ar : item.description_en}
                     </p>
                   </div>
 
                   {/* Price & Order Action */}
-                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-800/80">
-                    <div className="font-mono font-black text-amber-400 text-base">
-                      {item.price} <span className="text-xs font-normal">{t('currency')}</span>
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+                    <div className="font-mono font-black text-emerald-700 text-base">
+                      {item.price} <span className="text-xs font-normal text-slate-500">{t('currency')}</span>
                     </div>
 
                     {isOutOfStock ? (
-                      <span className="text-xs font-bold text-rose-400 bg-rose-500/10 px-2 py-1 rounded-lg border border-rose-500/20">
+                      <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-1 rounded-lg border border-rose-200">
                         {t('outOfStock')}
                       </span>
                     ) : (
@@ -285,7 +285,7 @@ export function CustomerMenu({ onOpenCart }) {
                           e.stopPropagation();
                           setSelectedItemForCustomize(item);
                         }}
-                        className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-orange-950/40 transition-transform active:scale-95 cursor-pointer"
+                        className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-emerald-700/20 transition-transform active:scale-95 cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>{hasModifiers ? (lang === 'ar' ? 'تخصيص وإضافة' : 'Customize') : (lang === 'ar' ? 'اختيار وإضافة +' : 'Select & Add')}</span>

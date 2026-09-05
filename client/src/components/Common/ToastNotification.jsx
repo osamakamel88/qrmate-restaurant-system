@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useSocket } from '../../context/SocketContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { Bell, CheckCircle2, AlertTriangle, X, Sparkles } from 'lucide-react';
@@ -36,32 +36,32 @@ export function ToastNotification() {
 
   return (
     <div className="fixed top-20 right-4 left-4 sm:left-auto sm:right-6 z-50 max-w-md animate-bounce-short">
-      <div className={`p-4 rounded-2xl border shadow-2xl backdrop-blur-lg flex items-start gap-3.5 ${
+      <div className={`p-4 rounded-2xl border shadow-xl backdrop-blur-lg flex items-start gap-3.5 ${
         isSuccess
-          ? 'bg-emerald-950/90 border-emerald-500/50 text-emerald-100 shadow-emerald-950/60'
+          ? 'bg-white border-emerald-300 text-slate-900 shadow-emerald-500/10'
           : isWarning
-          ? 'bg-amber-950/90 border-amber-500/50 text-amber-100 shadow-amber-950/60'
-          : 'bg-slate-900/95 border-slate-700 text-slate-100 shadow-black/60'
+          ? 'bg-white border-amber-300 text-slate-900 shadow-amber-500/10'
+          : 'bg-white border-slate-200 text-slate-900 shadow-slate-500/10'
       }`}>
         <div className={`p-2 rounded-xl flex-shrink-0 ${
-          isSuccess ? 'bg-emerald-500/20 text-emerald-400' : isWarning ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400'
+          isSuccess ? 'bg-emerald-50 text-emerald-600' : isWarning ? 'bg-amber-50 text-amber-600' : 'bg-slate-100 text-slate-600'
         }`}>
-          {isSuccess ? <CheckCircle2 className="w-6 h-6 animate-pulse" /> : isWarning ? <AlertTriangle className="w-6 h-6 animate-bounce" /> : <Bell className="w-6 h-6" />}
+          {isSuccess ? <CheckCircle2 className="w-5 h-5 animate-pulse" /> : isWarning ? <AlertTriangle className="w-5 h-5 animate-bounce" /> : <Bell className="w-5 h-5" />}
         </div>
 
         <div className="flex-1 min-w-0">
-          <h4 className="font-extrabold text-sm sm:text-base flex items-center gap-1.5">
+          <h4 className="font-extrabold text-sm sm:text-base text-slate-900 flex items-center gap-1.5">
             {lang === 'ar' ? activeNotification.title : (activeNotification.titleEn || activeNotification.title)}
-            {isSuccess && <Sparkles className="w-4 h-4 text-amber-300 inline" />}
+            {isSuccess && <Sparkles className="w-4 h-4 text-emerald-500 inline" />}
           </h4>
-          <p className="text-xs sm:text-sm mt-0.5 text-slate-300 leading-relaxed font-tajawal">
+          <p className="text-xs sm:text-sm mt-0.5 text-slate-600 leading-relaxed font-tajawal">
             {activeNotification.desc}
           </p>
         </div>
 
         <button
           onClick={clearNotification}
-          className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+          className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>

@@ -11,10 +11,10 @@ export function RequestBillModal({ tableNumber, onClose }) {
   const [success, setSuccess] = useState(false);
 
   const paymentOptions = [
-    { id: 'cash', label: t('cash'), icon: Banknote, color: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' },
-    { id: 'card', label: t('card'), icon: CreditCard, color: 'text-blue-400 border-blue-500/30 bg-blue-500/10' },
-    { id: 'instapay', label: t('instapay'), icon: Smartphone, color: 'text-purple-400 border-purple-500/30 bg-purple-500/10' },
-    { id: 'vodafone_cash', label: t('vodafoneCash'), icon: Smartphone, color: 'text-rose-400 border-rose-500/30 bg-rose-500/10' },
+    { id: 'cash', label: t('cash'), icon: Banknote, color: 'text-emerald-700 border-emerald-200 bg-emerald-50' },
+    { id: 'card', label: t('card'), icon: CreditCard, color: 'text-emerald-700 border-emerald-200 bg-emerald-50' },
+    { id: 'instapay', label: t('instapay'), icon: Smartphone, color: 'text-emerald-700 border-emerald-200 bg-emerald-50' },
+    { id: 'vodafone_cash', label: t('vodafoneCash'), icon: Smartphone, color: 'text-emerald-700 border-emerald-200 bg-emerald-50' },
   ];
 
   const handleSendBillRequest = async () => {
@@ -56,23 +56,23 @@ export function RequestBillModal({ tableNumber, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl p-5 sm:p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl p-5 sm:p-6">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div>
-            <h3 className="text-lg font-black text-white flex items-center gap-2">
-              <Receipt className="w-5 h-5 text-amber-400" />
+            <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+              <Receipt className="w-5 h-5 text-emerald-600" />
               {t('requestBillTitle')} #{tableNumber}
             </h3>
-            <p className="text-xs text-slate-400 font-tajawal mt-0.5">
+            <p className="text-xs text-slate-500 font-tajawal mt-0.5">
               {lang === 'ar' ? 'حدد طريقة الدفع وسيقوم الكاشير والويتر بتجهيز الشيك' : 'Select payment method and our staff will bring the check'}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-white"
+            className="p-1.5 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -80,19 +80,19 @@ export function RequestBillModal({ tableNumber, onClose }) {
 
         {success ? (
           <div className="py-8 text-center space-y-3">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto animate-bounce-short">
+            <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto animate-bounce-short">
               <Sparkles className="w-8 h-8" />
             </div>
-            <h4 className="text-lg font-extrabold text-white">
+            <h4 className="text-lg font-extrabold text-slate-900">
               {t('billRequested')}
             </h4>
-            <p className="text-xs text-slate-400 font-tajawal">
+            <p className="text-xs text-slate-500 font-tajawal">
               {lang === 'ar' ? 'الويتر في طريقه إليك مع الفاتورة وماكينة الدفع' : 'Staff is bringing your receipt and POS terminal'}
             </p>
           </div>
         ) : (
           <div className="mt-5 space-y-4">
-            <label className="text-xs font-bold text-slate-300 block">
+            <label className="text-xs font-bold text-slate-700 block">
               {t('preferredPayment')}
             </label>
 
@@ -107,8 +107,8 @@ export function RequestBillModal({ tableNumber, onClose }) {
                     onClick={() => setPaymentPref(opt.id)}
                     className={`w-full p-3.5 rounded-2xl border text-right flex items-center justify-between transition-all ${
                       isSelected
-                        ? 'bg-amber-500/20 border-amber-500 text-amber-300 ring-2 ring-amber-500/40 shadow-lg'
-                        : 'bg-slate-800/60 border-slate-700/80 text-slate-300 hover:bg-slate-800'
+                        ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-1 ring-emerald-500/40 shadow-sm'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -119,7 +119,7 @@ export function RequestBillModal({ tableNumber, onClose }) {
                     </div>
 
                     <div className={`w-5 h-5 rounded-full flex items-center justify-center border ${
-                      isSelected ? 'border-amber-400 bg-amber-500 text-black' : 'border-slate-600'
+                      isSelected ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300'
                     }`}>
                       {isSelected && <Check className="w-3.5 h-3.5" />}
                     </div>
@@ -132,7 +132,7 @@ export function RequestBillModal({ tableNumber, onClose }) {
             <button
               onClick={handleSendBillRequest}
               disabled={loading}
-              className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-lg shadow-orange-950/60 flex items-center justify-center gap-2 text-sm transition-all disabled:opacity-50"
+              className="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-sm shadow-emerald-700/20 flex items-center justify-center gap-2 text-sm transition-all disabled:opacity-50 active:scale-95"
             >
               <Send className="w-4 h-4" />
               <span>{loading ? t('loading') : t('sendBillRequest')}</span>

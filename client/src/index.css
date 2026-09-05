@@ -1,8 +1,10 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 @layer base {
   body {
     font-family: 'Cairo', 'Tajawal', 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #ffffff;
+    color: #0f172a;
   }
 }
 
@@ -12,14 +14,14 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #f8fafc;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #cbd5e1;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #94a3b8;
 }
 
 /* Hide scrollbar for category tabs */
