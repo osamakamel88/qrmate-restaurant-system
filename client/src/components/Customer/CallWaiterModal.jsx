@@ -13,9 +13,11 @@ export function CallWaiterModal({ tableNumber, onClose }) {
 
   const options = [
     { id: 'waiter', label: t('askOther'), icon: BellRing, color: 'bg-emerald-600 text-white' },
+    { id: 'charcoal', label: 'تغيير فحم الشيشة 🔥', icon: Flame, color: 'bg-amber-600 text-white' },
+    { id: 'shisha_head', label: 'تبديل رأس المعسل 💨', icon: Sparkles, color: 'bg-emerald-700 text-white' },
+    { id: 'shisha_hose', label: 'طلب لي طبي معقم 🌿', icon: Sparkles, color: 'bg-teal-600 text-white' },
     { id: 'water', label: t('askWater'), icon: Droplets, color: 'bg-emerald-500 text-white' },
-    { id: 'charcoal', label: t('askCharcoal'), icon: Flame, color: 'bg-emerald-600 text-white' },
-    { id: 'napkins', label: t('askNapkins'), icon: Utensils, color: 'bg-emerald-500 text-white' },
+    { id: 'napkins', label: t('askNapkins'), icon: Utensils, color: 'bg-slate-700 text-white' },
   ];
 
   const handleSendCall = async () => {

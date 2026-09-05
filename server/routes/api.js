@@ -568,7 +568,7 @@ router.get('/orders', (req, res) => {
     if (orderIds.length > 0) {
       let itemsSql = `SELECT * FROM order_items WHERE order_id IN (${orderIds.map(() => '?').join(',')})`;
       const itemParams = [...orderIds];
-      if (station && (station === 'kitchen' || station === 'barista')) {
+      if (station && (station === 'kitchen' || station === 'barista' || station === 'shisha')) {
         itemsSql += " AND station_type = ?";
         itemParams.push(station);
       }

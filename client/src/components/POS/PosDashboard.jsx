@@ -17,7 +17,9 @@ import {
   X, 
   FileText, 
   Calendar, 
-  Layers 
+  Layers,
+  BellRing,
+  Flame
 } from 'lucide-react';
 import { FALLBACK_TABLES, FALLBACK_SETTINGS } from '../../i18n/mockData';
 
@@ -42,8 +44,10 @@ export function PosDashboard() {
   const { lastEvent, playSound } = useSocket();
 
   const [tables, setTables] = useState(FALLBACK_TABLES);
+  const [activeCalls, setActiveCalls] = useState([]);
   const [selectedTable, setSelectedTable] = useState(null);
   const [activeTab, setActiveTab] = useState('floor'); // 'floor', 'reports'
+  const [floorSection, setFloorSection] = useState('all'); // 'all', 'indoor', 'outdoor', 'shisha', 'vip'
   const [dailyReport, setDailyReport] = useState(SAMPLE_DAILY_REPORT);
   const [loading, setLoading] = useState(false);
 
@@ -55,17 +59,20 @@ export function PosDashboard() {
 
   const fetchPosData = async () => {
     try {
-      const [tablesRes, reportsRes] = await Promise.all([
+      const [tablesRes, reportsRes, callsRes] = await Promise.all([
         fetch(`http://${window.location.hostname}:3001/api/tables`).catch(() => ({ json: () => ({ success: false }) })),
-        fetch(`http://${window.location.hostname}:3001/api/reports/daily`).catch(() => ({ json: () => ({ success: false }) }))
+        fetch(`http://${window.location.hostname}:3001/api/reports/daily`).catch(() => ({ json: () => ({ success: false }) })),
+        fetch(`http://${window.location.hostname}:3001/api/calls`).catch(() => ({ json: () => ({ success: false }) }))
       ]);
       const tablesJson = await tablesRes.json();
       const reportsJson = await reportsRes.json();
+      const callsJson = await callsRes.json();
 
       if (tablesJson.success && tablesJson.data && tablesJson.data.length > 0) setTables(tablesJson.data);
       if (reportsJson.success && reportsJson.data) setDailyReport(reportsJson.data);
+      if (callsJson.success && Array.isArray(callsJson.data)) setActiveCalls(callsJson.data.filter(c => c.status === 'pending'));
     } catch (err) {
-      console.warn('POS using offline fallback tables');
+      console.warn('Using fallback POS data');
     } finally {
       setLoading(false);
     }
@@ -196,55 +203,135 @@ export function PosDashboard() {
 
         {/* Tab 1: Floor Plan */}
         {activeTab === 'floor' && (
-          <div className="mt-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5">
-              {tables.map((tbl) => {
-                const isOccupied = tbl.status === 'occupied' && tbl.activeOrder;
-                const totalBill = isOccupied ? tbl.activeOrder.total_amount : 0;
+          <div className="mt-6 space-y-4">
+            
+            {/* Floor Sections Filter with Live Alert & Occupied Bubbles */}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+              {[
+                { id: 'all', label: 'كافة الصالات (All)', matcher: () => true },
+                { id: 'shisha', label: '🔥 لاونج الشيشة', isShisha: true, matcher: (tbl) => tbl.table_number >= 17 && tbl.table_number <= 24 },
+                { id: 'indoor', label: '🏛️ الصالة الداخلية', matcher: (tbl) => tbl.table_number >= 1 && tbl.table_number <= 8 },
+                { id: 'outdoor', label: '🌿 التراس والحديقة', matcher: (tbl) => tbl.table_number >= 9 && tbl.table_number <= 16 },
+                { id: 'vip', label: '👑 صالة VIP', matcher: (tbl) => tbl.table_number >= 25 && tbl.table_number <= 30 },
+              ].map(sec => {
+                const secTables = tables.filter(sec.matcher);
+                const occupiedCount = secTables.filter(t => t.status === 'occupied').length;
+                const callsCount = activeCalls.filter(c => secTables.some(t => t.table_number === c.table_number)).length;
 
                 return (
-                  <div
-                    key={tbl.id}
-                    onClick={() => handleTableClick(tbl)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between h-36 bg-white shadow-sm ${
-                      isOccupied
-                        ? 'border-rose-300 ring-2 ring-rose-100 hover:scale-[1.02]'
-                        : 'border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/20 text-slate-600'
+                  <button
+                    key={sec.id}
+                    onClick={() => setFloorSection(sec.id)}
+                    className={`relative px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 ${
+                      floorSection === sec.id
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : sec.isShisha
+                        ? 'bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100'
+                        : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 shadow-sm'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm ${
-                        isOccupied ? 'bg-rose-500 text-white font-mono shadow-sm' : 'bg-slate-100 text-slate-700'
-                      }`}>
-                        #{tbl.table_number}
+                    <span>{sec.label}</span>
+                    
+                    {/* Active Calls Bubble (Red) */}
+                    {callsCount > 0 && (
+                      <span className="bg-rose-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full animate-bounce shadow-sm" title="نداءات ويتر معلقة">
+                        🔔 {callsCount}
                       </span>
+                    )}
 
-                      <span className={`w-2.5 h-2.5 rounded-full ${isOccupied ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`} />
-                    </div>
-
-                    <div>
-                      <p className="text-[11px] text-slate-500 font-tajawal truncate">
-                        {tbl.section}
-                      </p>
-                      
-                      {isOccupied ? (
-                        <div className="mt-1">
-                          <span className="font-mono text-base font-black text-slate-900">
-                            {totalBill} <span className="text-[10px] text-slate-500">{t('currency')}</span>
-                          </span>
-                          <p className="text-[10px] text-rose-600 font-mono font-medium">
-                            {tbl.activeOrder.items?.length || 1} أصناف
-                          </p>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-emerald-700 font-bold mt-1 block">
-                          {t('available')}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                    {/* Occupied Count Bubble */}
+                    <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-md ${
+                      floorSection === sec.id
+                        ? 'bg-white/20 text-white'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {occupiedCount}/{secTables.length}
+                    </span>
+                  </button>
                 );
               })}
+            </div>
+
+            {/* Tables Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5">
+              {tables
+                .filter(tbl => {
+                  if (floorSection === 'all') return true;
+                  if (floorSection === 'shisha') return tbl.table_number >= 17 && tbl.table_number <= 24;
+                  if (floorSection === 'indoor') return tbl.table_number >= 1 && tbl.table_number <= 8;
+                  if (floorSection === 'outdoor') return tbl.table_number >= 9 && tbl.table_number <= 16;
+                  if (floorSection === 'vip') return tbl.table_number >= 25 && tbl.table_number <= 30;
+                  return true;
+                })
+                .map((tbl) => {
+                  const isOccupied = tbl.status === 'occupied' && tbl.activeOrder;
+                  const totalBill = isOccupied ? (tbl.activeOrder.total_amount || tbl.activeOrder.grand_total || 0) : 0;
+                  const tableCalls = activeCalls.filter(c => c.table_number === tbl.table_number);
+                  const hasCall = tableCalls.length > 0;
+                  const isShishaTable = tbl.table_number >= 17 && tbl.table_number <= 24;
+
+                  return (
+                    <div
+                      key={tbl.id}
+                      onClick={() => handleTableClick(tbl)}
+                      className={`relative p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between h-36 bg-white shadow-sm ${
+                        hasCall
+                          ? 'border-amber-400 ring-2 ring-amber-300 bg-amber-50/30 animate-pulse'
+                          : isOccupied
+                          ? 'border-rose-300 ring-2 ring-rose-100 hover:scale-[1.02]'
+                          : 'border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/20 text-slate-600'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <span className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm ${
+                            hasCall
+                              ? 'bg-amber-500 text-white font-mono shadow-sm'
+                              : isOccupied
+                              ? 'bg-rose-500 text-white font-mono shadow-sm'
+                              : 'bg-slate-100 text-slate-700'
+                          }`}>
+                            #{tbl.table_number}
+                          </span>
+
+                          {isShishaTable && (
+                            <span className="text-xs" title="لاونج الشيشة">🔥</span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          {hasCall && (
+                            <span className="p-1 rounded-lg bg-rose-500 text-white text-[10px] animate-bounce" title="طلب ويتر / فحم">
+                              <BellRing className="w-3 h-3" />
+                            </span>
+                          )}
+                          <span className={`w-2.5 h-2.5 rounded-full ${isOccupied ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`} />
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] text-slate-500 font-tajawal truncate">
+                          {tbl.section?.split('/')[0] || tbl.section}
+                        </p>
+                        
+                        {isOccupied ? (
+                          <div className="mt-1">
+                            <span className="font-mono text-base font-black text-slate-900">
+                              {totalBill} <span className="text-[10px] text-slate-500">{t('currency')}</span>
+                            </span>
+                            <p className="text-[10px] text-rose-600 font-mono font-medium">
+                              {tbl.activeOrder.items?.length || tbl.activeOrder.items_count || 1} أصناف
+                            </p>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-emerald-700 font-bold mt-1 block">
+                            {t('available')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
             </div>
           </div>
         )}

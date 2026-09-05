@@ -124,8 +124,8 @@ export const FALLBACK_CATEGORIES = [
     "id": 16,
     "name_ar": "شيشة ومعسل فاخر لاونج",
     "name_en": "Premium Hookah & Shisha",
-    "icon": "Sparkles",
-    "station_type": "barista",
+    "icon": "Flame",
+    "station_type": "shisha",
     "sort_order": 16
   }
 ];
@@ -1235,7 +1235,7 @@ export const FALLBACK_ITEMS = [
     "description_ar": "معسل أصلي عالي الجودة مع فحم طبيعي نقي وتغيير دوري للفحم مجاناً.",
     "description_en": "Classic authentic Double Apple hookah with natural coconut charcoal and free coals.",
     "price": 120.0,
-    "station_type": "barista",
+    "station_type": "shisha",
     "tags": [
       "popular",
       "chef_choice"
@@ -1251,7 +1251,7 @@ export const FALLBACK_ITEMS = [
     "description_ar": "نكهة الليمون والنعناع المنعشة مع لي صحي خاص.",
     "description_en": "Cooling lemon and fresh mint blend with hygienic disposable hose.",
     "price": 120.0,
-    "station_type": "barista",
+    "station_type": "shisha",
     "tags": [
       "popular"
     ],
@@ -1266,7 +1266,7 @@ export const FALLBACK_ITEMS = [
     "description_ar": "خلطة سول السرية الخاصة من الفواكه الاستوائية والنعناع المثلج لأرقى تجربة لاونج.",
     "description_en": "Soul exclusive house mix of exotic fruits and ice mint.",
     "price": 160.0,
-    "station_type": "barista",
+    "station_type": "shisha",
     "tags": [
       "popular",
       "chef_choice"

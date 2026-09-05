@@ -2,69 +2,87 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 
 const SocketContext = createContext();
 
-// Audio Synthesizer using Web Audio API (Zero external mp3 file dependencies, works offline 100%)
-function playSynthesizedSound(type = 'order') {
+// High-Impact Audio Synthesizer using Web Audio API (Zero external mp3 file dependencies, works offline 100%)
+function playSynthesizedSound(type = 'call') {
   try {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
 
-    if (type === 'order') {
-      // Ascending chime (C5 -> E5 -> G5)
-      const notes = [523.25, 659.25, 783.99];
+    if (type === 'call') {
+      // High-Alert Metallic Hotel Concierge Desk Bell (Distinct Double-Strike Brass Chime)
+      // Strike 1 at t=0, Strike 2 at t=0.22s with rich harmonics for penetration in noisy environments
+      const strikes = [0, 0.22];
+      const harmonics = [
+        { freq: 1046.50, gain: 0.50, decay: 1.2 }, // C6 fundamental
+        { freq: 1318.51, gain: 0.40, decay: 1.0 }, // E6 harmonic
+        { freq: 2093.00, gain: 0.35, decay: 0.8 }, // C7 high shimmer
+        { freq: 3135.96, gain: 0.25, decay: 0.6 }, // G7 metallic strike overtone
+      ];
+
+      strikes.forEach((strikeTime) => {
+        harmonics.forEach(({ freq, gain: peakGain, decay }) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + strikeTime);
+          
+          // Sharp attack + resonant exponential decay
+          gain.gain.setValueAtTime(peakGain, ctx.currentTime + strikeTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + strikeTime + decay);
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          
+          osc.start(ctx.currentTime + strikeTime);
+          osc.stop(ctx.currentTime + strikeTime + decay);
+        });
+
+        // Add acoustic transient strike click
+        const clickOsc = ctx.createOscillator();
+        const clickGain = ctx.createGain();
+        clickOsc.type = 'triangle';
+        clickOsc.frequency.setValueAtTime(880, ctx.currentTime + strikeTime);
+        clickGain.gain.setValueAtTime(0.3, ctx.currentTime + strikeTime);
+        clickGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + strikeTime + 0.08);
+        clickOsc.connect(clickGain);
+        clickGain.connect(ctx.destination);
+        clickOsc.start(ctx.currentTime + strikeTime);
+        clickOsc.stop(ctx.currentTime + strikeTime + 0.08);
+      });
+    } else if (type === 'order') {
+      // Clear Ascending Triple-Chime (C5 -> E5 -> G5 -> C6)
+      const notes = [523.25, 659.25, 783.99, 1046.50];
       notes.forEach((freq, idx) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.12);
-        gain.gain.setValueAtTime(0.3, ctx.currentTime + idx * 0.12);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.12 + 0.3);
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.11);
+        gain.gain.setValueAtTime(0.45, ctx.currentTime + idx * 0.11);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + idx * 0.11 + 0.4);
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + idx * 0.12);
-        osc.stop(ctx.currentTime + idx * 0.12 + 0.3);
+        osc.start(ctx.currentTime + idx * 0.11);
+        osc.stop(ctx.currentTime + idx * 0.11 + 0.4);
       });
-    } else if (type === 'call') {
-      // High-clarity Bell alert (Ding-Dong 880Hz -> 660Hz)
-      const now = ctx.currentTime;
-      
-      // Ding
-      const osc1 = ctx.createOscillator();
-      const gain1 = ctx.createGain();
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(880, now);
-      gain1.gain.setValueAtTime(0.6, now);
-      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-      osc1.connect(gain1);
-      gain1.connect(ctx.destination);
-      osc1.start(now);
-      osc1.stop(now + 0.6);
-
-      // Dong
-      const osc2 = ctx.createOscillator();
-      const gain2 = ctx.createGain();
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(659.25, now + 0.28);
-      gain2.gain.setValueAtTime(0.6, now + 0.28);
-      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
-      osc2.connect(gain2);
-      gain2.connect(ctx.destination);
-      osc2.start(now + 0.28);
-      osc2.stop(now + 0.9);
     } else if (type === 'ready') {
-      // Celebratory cheerful fanfare (E5 -> G5 -> C6 -> E6)
+      // Cheerful fanfare (E5 -> G5 -> C6 -> E6)
       const notes = [659.25, 783.99, 1046.50, 1318.51];
       notes.forEach((freq, idx) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.1);
-        gain.gain.setValueAtTime(0.35, ctx.currentTime + idx * 0.1);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.1 + 0.4);
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.09);
+        gain.gain.setValueAtTime(0.4, ctx.currentTime + idx * 0.09);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + idx * 0.09 + 0.45);
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + idx * 0.1);
-        osc.stop(ctx.currentTime + idx * 0.1 + 0.4);
+        osc.start(ctx.currentTime + idx * 0.09);
+        osc.stop(ctx.currentTime + idx * 0.09 + 0.45);
       });
     }
   } catch (err) {

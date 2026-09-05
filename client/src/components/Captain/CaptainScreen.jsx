@@ -19,9 +19,19 @@ import {
 
 const SAMPLE_CAPTAIN_CALLS = [
   { id: 101, table_number: 4, type: 'water', detail: 'طلب مياه معدنية باردة إضافية', status: 'pending', created_at: new Date(Date.now() - 2 * 60000).toISOString() },
-  { id: 102, table_number: 12, type: 'charcoal', detail: 'تغيير فحم الشيشة (لاونج الشيشة)', status: 'pending', created_at: new Date(Date.now() - 5 * 60000).toISOString() },
+  { id: 102, table_number: 18, type: 'charcoal', detail: 'تغيير فحم الشيشة (لاونج الشيشة)', status: 'pending', created_at: new Date(Date.now() - 5 * 60000).toISOString() },
   { id: 103, table_number: 7, type: 'bill', detail: 'طلب الحساب - طريقة الدفع: فيزا / بطاقة بنكية', payment_preference: 'card', status: 'acknowledged', created_at: new Date(Date.now() - 8 * 60000).toISOString() },
+  { id: 104, table_number: 22, type: 'shisha_head', detail: 'تبديل رأس تفاحتين فاخر لاونج', status: 'pending', created_at: new Date(Date.now() - 1 * 60000).toISOString() },
 ];
+
+export const getTableSection = (tableNum) => {
+  const n = parseInt(tableNum, 10);
+  if (n >= 1 && n <= 8) return { id: 'indoor', name_ar: 'الصالة الداخلية', name_en: 'Indoor Hall', badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+  if (n >= 9 && n <= 16) return { id: 'outdoor', name_ar: 'التراس والحديقة', name_en: 'Outdoor Garden', badgeBg: 'bg-sky-50 text-sky-700 border-sky-200' };
+  if (n >= 17 && n <= 24) return { id: 'shisha', name_ar: 'لاونج الشيشة', name_en: 'Shisha Lounge', badgeBg: 'bg-amber-50 text-amber-800 border-amber-300' };
+  if (n >= 25 && n <= 30) return { id: 'vip', name_ar: 'صالة العائلات VIP', name_en: 'VIP Lounge', badgeBg: 'bg-purple-50 text-purple-700 border-purple-200' };
+  return { id: 'general', name_ar: 'صالة المطعم', name_en: 'Dining Hall', badgeBg: 'bg-slate-50 text-slate-700 border-slate-200' };
+};
 
 export function CaptainScreen() {
   const { lang, t } = useLanguage();
@@ -29,7 +39,7 @@ export function CaptainScreen() {
 
   const [calls, setCalls] = useState(SAMPLE_CAPTAIN_CALLS);
   const [orders, setOrders] = useState([]);
-  const [filter, setFilter] = useState('all'); // 'all', 'bill', 'charcoal', 'waiter'
+  const [filter, setFilter] = useState('all'); // 'all', 'shisha', 'indoor', 'outdoor', 'vip', 'bill'
   const [loading, setLoading] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
@@ -100,10 +110,36 @@ export function CaptainScreen() {
     }
   };
 
+  // Section Counts
+  const countPending = (predicate) => calls.filter(c => c.status === 'pending' && predicate(c)).length;
+
+  const totalPending = calls.filter(c => c.status === 'pending').length;
+  const shishaPending = countPending(c => getTableSection(c.table_number).id === 'shisha' || ['charcoal', 'shisha_head', 'shisha_hose'].includes(c.type));
+  const indoorPending = countPending(c => getTableSection(c.table_number).id === 'indoor' && !['charcoal', 'shisha_head', 'shisha_hose'].includes(c.type));
+  const outdoorPending = countPending(c => getTableSection(c.table_number).id === 'outdoor' && !['charcoal', 'shisha_head', 'shisha_hose'].includes(c.type));
+  const vipPending = countPending(c => getTableSection(c.table_number).id === 'vip' && !['charcoal', 'shisha_head', 'shisha_hose'].includes(c.type));
+  const billPending = countPending(c => c.type === 'bill');
+
   const filteredCalls = calls.filter(c => {
     if (filter === 'all') return true;
+    if (filter === 'shisha') return getTableSection(c.table_number).id === 'shisha' || ['charcoal', 'shisha_head', 'shisha_hose'].includes(c.type);
+    if (filter === 'indoor') return getTableSection(c.table_number).id === 'indoor';
+    if (filter === 'outdoor') return getTableSection(c.table_number).id === 'outdoor';
+    if (filter === 'vip') return getTableSection(c.table_number).id === 'vip';
+    if (filter === 'bill') return c.type === 'bill';
     return c.type === filter;
   });
+
+  const getCallMeta = (call) => {
+    const isShisha = ['charcoal', 'shisha_head', 'shisha_hose'].includes(call.type);
+    if (call.type === 'bill') return { title: 'طلب الشيك / الحساب', icon: Receipt, badgeColor: 'bg-emerald-100 text-emerald-700' };
+    if (call.type === 'charcoal') return { title: 'تغيير فحم الشيشة 🔥', icon: Flame, badgeColor: 'bg-amber-100 text-amber-800' };
+    if (call.type === 'shisha_head') return { title: 'تبديل رأس المعسل 💨', icon: Sparkles, badgeColor: 'bg-amber-100 text-amber-800' };
+    if (call.type === 'shisha_hose') return { title: 'طلب لي طبي معقم 🌿', icon: Flame, badgeColor: 'bg-amber-100 text-amber-800' };
+    if (call.type === 'water') return { title: 'طلب مياه معدنية 💧', icon: Droplets, badgeColor: 'bg-sky-100 text-sky-700' };
+    if (call.type === 'cutlery') return { title: 'مناديل وأدوات مائدة 🍴', icon: Utensils, badgeColor: 'bg-slate-100 text-slate-700' };
+    return { title: 'استدعاء الويتر 🙋‍♂️', icon: BellRing, badgeColor: 'bg-emerald-100 text-emerald-700' };
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 sm:p-6 pb-24 font-tajawal text-slate-900">
@@ -114,7 +150,7 @@ export function CaptainScreen() {
           <div>
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                Captain / Waiter Station
+                Captain & Waiter Station
               </span>
               <span className="text-xs text-slate-500 font-medium">
                 {calls.length} {lang === 'ar' ? 'استدعاءات نشطة' : 'active calls'}
@@ -132,10 +168,10 @@ export function CaptainScreen() {
             <button
               onClick={() => playSound('call')}
               className="p-2.5 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
-              title="تجربة رنة الجرس"
+              title="تجربة رنة الجرس التنبيهية العالية"
             >
               <BellRing className="w-4 h-4 text-emerald-600 animate-bounce" />
-              <span>🔔 تجربة الجرس</span>
+              <span>🔔 تجربة الجرس العالي</span>
             </button>
 
             <button
@@ -160,24 +196,37 @@ export function CaptainScreen() {
           </div>
         </div>
 
-        {/* Filter Pills */}
+        {/* Section Filter Tabs with Pending Bubbles */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-4 border-b border-slate-200/80 mb-6">
           {[
-            { id: 'all', label: t('all') },
-            { id: 'waiter', label: t('callWaiter') },
-            { id: 'bill', label: t('requestBill') },
-            { id: 'charcoal', label: t('askCharcoal') },
+            { id: 'all', label: 'الكل (All)', count: totalPending, isShisha: false },
+            { id: 'shisha', label: '🔥 لاونج الشيشة', count: shishaPending, isShisha: true },
+            { id: 'indoor', label: '🏛️ الصالة الداخلية', count: indoorPending, isShisha: false },
+            { id: 'outdoor', label: '🌿 التراس والحديقة', count: outdoorPending, isShisha: false },
+            { id: 'vip', label: '👑 صالة VIP', count: vipPending, isShisha: false },
+            { id: 'bill', label: '💳 طلب الحساب', count: billPending, isShisha: false },
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setFilter(tab.id)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 ${
                 filter === tab.id
                   ? 'bg-emerald-600 text-white shadow-sm'
+                  : tab.isShisha
+                  ? 'bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100'
                   : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 shadow-sm'
               }`}
             >
-              {tab.label}
+              <span>{tab.label}</span>
+              {tab.count > 0 && (
+                <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full shadow-sm animate-pulse ${
+                  filter === tab.id
+                    ? 'bg-white text-emerald-800'
+                    : 'bg-rose-500 text-white'
+                }`}>
+                  {tab.count}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -199,29 +248,36 @@ export function CaptainScreen() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredCalls.map((call) => {
                   const isBill = call.type === 'bill';
-                  const isCharcoal = call.type === 'charcoal';
-                  const isWater = call.type === 'water';
+                  const isShisha = ['charcoal', 'shisha_head', 'shisha_hose'].includes(call.type) || getTableSection(call.table_number).id === 'shisha';
                   const isAcknowledged = call.status === 'acknowledged';
+                  const section = getTableSection(call.table_number);
+                  const meta = getCallMeta(call);
+                  const Icon = meta.icon;
 
                   return (
                     <div
                       key={call.id}
                       className={`p-5 rounded-3xl border transition-all flex flex-col justify-between shadow-sm bg-white ${
                         isAcknowledged
-                          ? 'border-slate-200 bg-slate-50/80 text-slate-600'
+                          ? 'border-slate-200 bg-slate-50/80 text-slate-600 opacity-90'
+                          : isShisha
+                          ? 'border-amber-300 ring-2 ring-amber-100 bg-amber-50/20'
                           : isBill
                           ? 'border-emerald-300 ring-2 ring-emerald-100 bg-emerald-50/20'
-                          : isCharcoal
-                          ? 'border-amber-300 ring-2 ring-amber-100 bg-amber-50/20'
                           : 'border-emerald-300 ring-2 ring-emerald-100 bg-emerald-50/20'
                       }`}
                     >
                       <div>
-                        {/* Table badge and time */}
+                        {/* Table badge, section chip, and time */}
                         <div className="flex items-center justify-between gap-2 mb-3">
-                          <span className="px-3 py-1 rounded-xl text-sm font-black bg-emerald-600 text-white shadow-sm">
-                            {t('table')} #{call.table_number}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="px-3 py-1 rounded-xl text-sm font-black bg-emerald-600 text-white shadow-sm">
+                              {t('table')} #{call.table_number}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border ${section.badgeBg}`}>
+                              {lang === 'ar' ? section.name_ar : section.name_en}
+                            </span>
+                          </div>
 
                           <span className="text-[11px] text-slate-500 font-mono flex items-center gap-1">
                             <Clock className="w-3 h-3" />
@@ -231,14 +287,12 @@ export function CaptainScreen() {
 
                         {/* Call description */}
                         <div className="flex items-start gap-3">
-                          <div className={`p-2.5 rounded-2xl ${
-                            isBill ? 'bg-emerald-100 text-emerald-700' : isCharcoal ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
-                          }`}>
-                            {isBill ? <Receipt className="w-5 h-5" /> : isCharcoal ? <Flame className="w-5 h-5" /> : isWater ? <Droplets className="w-5 h-5" /> : <BellRing className="w-5 h-5" />}
+                          <div className={`p-2.5 rounded-2xl ${meta.badgeColor}`}>
+                            <Icon className="w-5 h-5" />
                           </div>
-                          <div>
+                          <div className="flex-1 min-w-0">
                             <h4 className="font-black text-slate-900 text-sm">
-                              {isBill ? 'طلب الشيك / الحساب' : isCharcoal ? 'تغيير فحم الشيشة 🔥' : isWater ? 'طلب ماء إضافي' : 'استدعاء الويتر'}
+                              {meta.title}
                             </h4>
                             {isBill && call.payment_preference && (
                               <p className="text-xs text-emerald-700 font-bold mt-0.5">

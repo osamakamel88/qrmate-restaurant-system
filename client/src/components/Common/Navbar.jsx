@@ -20,14 +20,40 @@ import {
 
 export function Navbar({ activeTab, setActiveTab, onOpenCart }) {
   const { lang, toggleLanguage, t } = useLanguage();
-  const { isConnected } = useSocket();
+  const { isConnected, lastEvent } = useSocket();
   const { totalItemsCount, tableNumber, setTableNumber } = useCart();
   const { currentUser, setIsPinModalOpen } = useAuth();
+
+  const [pendingCallsCount, setPendingCallsCount] = React.useState(0);
+
+  const fetchCallsCount = async () => {
+    try {
+      const res = await fetch(`http://${window.location.hostname}:3001/api/calls`);
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        setPendingCallsCount(json.data.filter(c => c.status === 'pending').length);
+      }
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  React.useEffect(() => {
+    fetchCallsCount();
+    const interval = setInterval(fetchCallsCount, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  React.useEffect(() => {
+    if (lastEvent?.type === 'NEW_TABLE_CALL' || lastEvent?.type === 'CALL_STATUS_CHANGED') {
+      fetchCallsCount();
+    }
+  }, [lastEvent]);
 
   const navItems = [
     { id: 'showcase', label: t('tabShowcase'), icon: Layers, badge: 'PROD' },
     { id: 'menu', label: t('tabMenu'), icon: UtensilsCrossed },
-    { id: 'captain', label: t('tabCaptain'), icon: BellRing },
+    { id: 'captain', label: t('tabCaptain'), icon: BellRing, alertCount: pendingCallsCount },
     { id: 'kds', label: t('tabKDS'), icon: ChefHat },
     { id: 'pos', label: t('tabPOS'), icon: Receipt },
     { id: 'admin', label: t('tabAdmin'), icon: ShieldCheck },
@@ -63,7 +89,7 @@ export function Navbar({ activeTab, setActiveTab, onOpenCart }) {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
+                  className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
                     isActive
                       ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-700/20'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
@@ -71,7 +97,12 @@ export function Navbar({ activeTab, setActiveTab, onOpenCart }) {
                 >
                   <Icon className="w-4 h-4" />
                   <span className="hidden md:inline">{item.label}</span>
-                  {item.badge && !isActive && (
+                  {item.alertCount > 0 && (
+                    <span className="bg-rose-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full animate-bounce shadow-sm">
+                      {item.alertCount}
+                    </span>
+                  )}
+                  {item.badge && !isActive && !item.alertCount && (
                     <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold hidden lg:inline">
                       {item.badge}
                     </span>

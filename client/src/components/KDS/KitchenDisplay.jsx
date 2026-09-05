@@ -23,7 +23,7 @@ export function KitchenDisplay() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    registerRole(station === 'kitchen' ? 'kds_kitchen' : station === 'barista' ? 'kds_barista' : 'pos');
+    registerRole(station === 'kitchen' ? 'kds_kitchen' : station === 'barista' ? 'kds_barista' : station === 'shisha' ? 'kds_shisha' : 'pos');
   }, [station]);
 
   const fetchKdsOrders = async () => {
@@ -117,10 +117,10 @@ export function KitchenDisplay() {
           </div>
 
           {/* Station Switcher Tabs */}
-          <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar">
             <button
               onClick={() => setStation('all')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${
                 station === 'all'
                   ? 'bg-emerald-600 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900'
@@ -132,7 +132,7 @@ export function KitchenDisplay() {
 
             <button
               onClick={() => setStation('kitchen')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${
                 station === 'kitchen'
                   ? 'bg-emerald-600 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900'
@@ -144,7 +144,7 @@ export function KitchenDisplay() {
 
             <button
               onClick={() => setStation('barista')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${
                 station === 'barista'
                   ? 'bg-emerald-600 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900'
@@ -152,6 +152,18 @@ export function KitchenDisplay() {
             >
               <Coffee className="w-4 h-4" />
               <span>{t('stationBarista')}</span>
+            </button>
+
+            <button
+              onClick={() => setStation('shisha')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                station === 'shisha'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Flame className="w-4 h-4" />
+              <span>شيشة وفحم (Shisha)</span>
             </button>
 
             <button
@@ -171,7 +183,7 @@ export function KitchenDisplay() {
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <h4 className="text-base font-extrabold text-slate-900">
-                {lang === 'ar' ? 'جميع التيكتات منجزة بالمطبخ والبار!' : 'All station tickets are clear!'}
+                {lang === 'ar' ? 'جميع التيكتات منجزة بالمحطة المحددة!' : 'All tickets for this station are clear!'}
               </h4>
               <p className="text-xs text-slate-500 font-tajawal">
                 {lang === 'ar' ? 'ستظهر الطلبات الجديدة هنا فور قيام الضيوف بالطلب عبر الـ QR' : 'Incoming orders will appear here automatically'}
@@ -279,7 +291,7 @@ export function KitchenDisplay() {
                             </div>
 
                             <span className="text-[10px] uppercase font-bold text-slate-400 flex-shrink-0">
-                              {item.station_type === 'kitchen' ? '🍳' : '☕'}
+                              {item.station_type === 'kitchen' ? '🍳' : item.station_type === 'shisha' ? '🔥' : '☕'}
                             </span>
                           </div>
                         );

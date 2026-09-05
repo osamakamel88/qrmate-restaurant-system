@@ -37,7 +37,8 @@ import {
   AlertCircle,
   LayoutGrid,
   MapPin,
-  RefreshCw
+  RefreshCw,
+  Flame
 } from 'lucide-react';
 
 export function AdminDashboard() {
@@ -1712,7 +1713,7 @@ export function AdminDashboard() {
 
                 <div className="sm:col-span-2">
                   <label className="text-xs font-bold text-slate-700 block mb-1">محطة التجهيز وتوجيه الأوردر (KDS Station) *</label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
                     <button
                       type="button"
                       onClick={() => setItemStation('kitchen')}
@@ -1723,7 +1724,7 @@ export function AdminDashboard() {
                       }`}
                     >
                       <ChefHat className="w-4 h-4 text-blue-600" />
-                      <span>شاشة المطبخ (Kitchen KDS)</span>
+                      <span>المطبخ (Kitchen)</span>
                     </button>
 
                     <button
@@ -1736,7 +1737,20 @@ export function AdminDashboard() {
                       }`}
                     >
                       <Coffee className="w-4 h-4 text-emerald-600" />
-                      <span>شاشة البار والشيشة (Barista KDS)</span>
+                      <span>البار والمشروبات (Barista)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setItemStation('shisha')}
+                      className={`p-3 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-all ${
+                        itemStation === 'shisha'
+                          ? 'bg-amber-50 text-amber-800 border-amber-400 shadow-sm'
+                          : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      <Flame className="w-4 h-4 text-amber-600" />
+                      <span>الشيشة والفحم (Shisha KDS)</span>
                     </button>
                   </div>
                 </div>
@@ -1862,8 +1876,9 @@ export function AdminDashboard() {
                   onChange={(e) => setCatStation(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
                 >
-                  <option value="kitchen">المطبخ (Kitchen)</option>
-                  <option value="barista">البار / المشروبات والشيشة (Barista)</option>
+                  <option value="kitchen">المطبخ والأطباق الساخنة (Kitchen)</option>
+                  <option value="barista">البار والمشروبات والحلويات (Barista)</option>
+                  <option value="shisha">محطة الشيشة والفحم واللاونج (Shisha)</option>
                 </select>
               </div>
 
